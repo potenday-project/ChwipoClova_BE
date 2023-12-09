@@ -88,7 +88,7 @@ tasks.named('test') {
 }
 
 task copyGitSubmodule(type: Copy) {
-	from './server-config'
+	from './server_config'
 	include '*.yml'
 	into './src/main/resources'
 }
