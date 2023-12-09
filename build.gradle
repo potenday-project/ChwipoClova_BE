@@ -102,6 +102,10 @@ task copyGitSubmodule(type: Copy) {
 	into './src/main/resources'
 }
 
+processResources {
+	dependsOn copyGitSubmodule
+}
+
 // plan jar 생성 방지
 jar {
 	enabled = false
