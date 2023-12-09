@@ -40,13 +40,13 @@ jobs:
       - name: Docker build
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_REPO }}/jagiyadocker .
-          docker push ${{ secrets.DOCKER_REPO }}/jagiyadocker
+          docker build -t ${{ secrets.DOCKER_REPO }}/chwipoclovadocker .
+          docker push ${{ secrets.DOCKER_REPO }}/chwipoclovadocker
 
       - name: Deploy
         run: |
           docker stop be-con || true
           docker rm -f be-con || true
           docker rmi $(docker images -f "dangling=true" -q) || true
-          docker pull ${{ secrets.DOCKER_REPO }}/jagiyadocker:latest
-          docker run -v /var/log/service:/var/log/service --name be-con -p 8080:8080 -d ${{ secrets.DOCKER_REPO }}/jagiyadocker:latest
+          docker pull ${{ secrets.DOCKER_REPO }}/chwipoclovadocker:latest
+          docker run -v /var/log/service:/var/log/service --name be-con -p 8080:8080 -d ${{ secrets.DOCKER_REPO }}/chwipoclovadocker:latest
