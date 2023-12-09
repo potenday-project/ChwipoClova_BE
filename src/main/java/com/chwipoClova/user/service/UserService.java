@@ -3,6 +3,8 @@ package com.chwipoClova.user.service;
 import com.chwipoClova.common.dto.Token;
 import com.chwipoClova.common.dto.TokenDto;
 import com.chwipoClova.common.repository.TokenRepository;
+import com.chwipoClova.common.response.CommonResponse;
+import com.chwipoClova.common.response.MessageCode;
 import com.chwipoClova.common.utils.JwtUtil;
 import com.chwipoClova.user.dto.KakaoToken;
 import com.chwipoClova.user.dto.KakaoUserInfo;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -70,7 +73,7 @@ public class UserService {
         return userSnsUrlRes;
     }
 
-    public UserLoginRes kakaoLogin(String code, HttpServletResponse response) {
+    public CommonResponse kakaoLogin(String code, HttpServletResponse response) {
         KakaoToken kakaoToken = requestAccessToken(code);
         KakaoUserInfo kakaoUserInfo = requestOauthInfo(kakaoToken);
 
@@ -81,10 +84,40 @@ public class UserService {
 
         Optional<User> userInfo = userRepository.findBySnsTypeAndSnsId(snsType, snsId);
 
-        User userInfoRst;
         // 유저 정보가 있다면 업데이트 없으면 등록
         if (userInfo.isPresent()) {
-            userInfoRst = userInfo.get();
+            User userInfoRst = userInfo.get();
+
+            Long userId = userInfoRst.getUserId();
+
+            TokenDto tokenDto = jwtUtil.createAllToken(String.valueOf(userId));
+
+            // Refresh토큰 있는지 확인
+            Optional<Token> refreshToken = tokenRepository.findByUserUserId(userInfoRst.getUserId());
+
+            // 있다면 새토큰 발급후 업데이트
+            // 없다면 새로 만들고 디비 저장
+            if(refreshToken.isPresent()) {
+                tokenRepository.save(refreshToken.get().updateToken(tokenDto.getRefreshToken()));
+            }else {
+                Token newToken = new Token(tokenDto.getRefreshToken(),  User.builder().userId(userInfoRst.getUserId()).build());
+                tokenRepository.save(newToken);
+            }
+
+            // response 헤더에 Access Token / Refresh Token 넣음
+            setHeader(response, tokenDto);
+
+            UserLoginRes userLoginRes = UserLoginRes.builder()
+                    .snsId(userInfoRst.getSnsId())
+                    .userId(userId)
+                    .email(userInfoRst.getEmail())
+                    .name(userInfoRst.getName())
+                    .snsType(userInfoRst.getSnsType())
+                    .regDate(userInfoRst.getRegDate())
+                    .modifyDate(userInfoRst.getModifyDate())
+                    .build();
+
+            return new CommonResponse<>(String.valueOf(HttpStatus.OK.value()), userLoginRes, HttpStatus.OK.getReasonPhrase());
         } else {
             log.info("신규유저 등록 {}", nickname);
             User user = User.builder()
@@ -94,37 +127,10 @@ public class UserService {
                     .snsType(kakaoUserInfo.getOAuthProvider().getCode())
                     .regDate(new Date())
                     .build();
-            userInfoRst = userRepository.save(user);
+            userRepository.save(user);
+            return new CommonResponse<>(MessageCode.NEW_USER.getCode(), null, MessageCode.NEW_USER.getMessage());
         }
 
-        Long userId = userInfoRst.getUserId();
-
-        TokenDto tokenDto = jwtUtil.createAllToken(String.valueOf(userId));
-
-        // Refresh토큰 있는지 확인
-        Optional<Token> refreshToken = tokenRepository.findByUserUserId(userInfoRst.getUserId());
-
-        // 있다면 새토큰 발급후 업데이트
-        // 없다면 새로 만들고 디비 저장
-        if(refreshToken.isPresent()) {
-            tokenRepository.save(refreshToken.get().updateToken(tokenDto.getRefreshToken()));
-        }else {
-            Token newToken = new Token(tokenDto.getRefreshToken(),  User.builder().userId(userInfoRst.getUserId()).build());
-            tokenRepository.save(newToken);
-        }
-
-        // response 헤더에 Access Token / Refresh Token 넣음
-        setHeader(response, tokenDto);
-
-        return UserLoginRes.builder()
-                .snsId(userInfoRst.getSnsId())
-                .userId(userId)
-                .email(userInfoRst.getEmail())
-                .name(userInfoRst.getName())
-                .snsType(userInfoRst.getSnsType())
-                .regDate(userInfoRst.getRegDate())
-                .modifyDate(userInfoRst.getModifyDate())
-                .build();
     }
 
     public KakaoToken requestAccessToken(String code) {

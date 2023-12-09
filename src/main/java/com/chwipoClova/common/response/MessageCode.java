@@ -9,15 +9,17 @@ import lombok.ToString;
 @AllArgsConstructor
 public enum MessageCode {
 
-    SUCCESS_SAVE("SS", "정상적으로 저장되었습니다."),
+    SUCCESS_SAVE("600", "정상적으로 저장되었습니다."),
 
-    SUCCESS_DELETE("SD", "정상적으로 삭제되었습니다."),
+    SUCCESS_DELETE("601", "정상적으로 삭제되었습니다."),
 
-    FAIL_SAVE("FS", "저장에 실패하였습니다."),
+    FAIL_SAVE("602", "저장에 실패하였습니다."),
 
-    FAIL_DELETE("FD", "삭제에 실패하였습니다."),
+    FAIL_DELETE("603", "삭제에 실패하였습니다."),
 
-    SUCCESS("S", "정상적으로 처리되었습니다.")
+    SUCCESS("604", "정상적으로 처리되었습니다."),
+
+    NEW_USER("700", "신규 가입되었습니다.")
     ;
 
     private static final MessageCode[] VALUES;

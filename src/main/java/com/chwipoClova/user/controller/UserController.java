@@ -1,5 +1,6 @@
 package com.chwipoClova.user.controller;
 
+import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.user.response.UserLoginRes;
 import com.chwipoClova.user.response.UserSnsUrlRes;
 import com.chwipoClova.user.service.UserService;
@@ -36,9 +37,14 @@ public class UserController {
     public UserSnsUrlRes getKakaoUrl() throws Exception {
         return userService.getKakaoUrl();
     }
-    @Hidden
+
+    @Operation(summary = "카카오 로그인", description = "카카오 로그인")
     @GetMapping("/kakaoCallback")
-    public UserLoginRes kakaoCallback(@RequestParam(name = "code") String code, HttpServletResponse response) throws Exception {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK")
+    }
+    )
+    public CommonResponse kakaoCallback(@RequestParam(name = "code") String code, HttpServletResponse response) throws Exception {
         return userService.kakaoLogin(code, response);
     }
 

@@ -15,7 +15,7 @@ import java.util.Date;
 @Slf4j
 public class JwtProvider {
 
-    private final long ACCESS_TOKEN_EXPIRE_TIME;            // 30분
+    private final long ACCESS_TOKEN_EXPIRE_TIME;   // 30분
     private final long REFRESH_TOKEN_EXPIRE_TIME;  // 7일
 
     private final Key key;
