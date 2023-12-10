@@ -1,6 +1,9 @@
 package com.chwipoClova.user.controller;
 
 import com.chwipoClova.common.response.CommonResponse;
+import com.chwipoClova.common.response.MessageCode;
+import com.chwipoClova.user.request.UserLoginReq;
+import com.chwipoClova.user.response.UserInfoRes;
 import com.chwipoClova.user.response.UserLoginRes;
 import com.chwipoClova.user.response.UserSnsUrlRes;
 import com.chwipoClova.user.service.UserService;
@@ -41,11 +44,24 @@ public class UserController {
     @Operation(summary = "카카오 로그인", description = "카카오 로그인")
     @GetMapping("/kakaoCallback")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK")
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = UserLoginRes.class))),
+            @ApiResponse(responseCode = "700", description = "신규 가입되었습니다.", content = @Content(schema = @Schema(implementation = String.class)))
     }
     )
-    public CommonResponse kakaoCallback(@RequestParam(name = "code") String code, HttpServletResponse response) throws Exception {
+    public CommonResponse kakaoCallback(@Schema(description = "로그인코드", example = "1", name = "code") @RequestParam(name = "code") String code, HttpServletResponse response) throws Exception {
         return userService.kakaoLogin(code, response);
     }
 
+
+    @Operation(summary = "유저 정보 조회 (테스트용)", description = "유저 정보 조회 (테스트용)")
+    @GetMapping("/getUserInfo")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK")
+    }
+    )
+    public UserInfoRes getUserInfo(
+            @Schema(description = "이메일", example = "test@naver.com", name = "email") @RequestParam(name = "email") String email
+    ) {
+        return userService.selectUserInfo(email);
+    }
 }

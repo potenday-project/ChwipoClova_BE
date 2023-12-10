@@ -49,4 +49,4 @@ jobs:
           docker rm -f be-con || true
           docker rmi $(docker images -f "dangling=true" -q) || true
           docker pull ${{ secrets.DOCKER_REPO }}/chwipoclovadocker:latest
-          docker run -v /var/log/service:/var/log/service --name be-con -p 8080:8080 -d ${{ secrets.DOCKER_REPO }}/chwipoclovadocker:latest
+          docker run -v /var/log/service:/var/log/service -v /var/upload:/var/upload --name be-con -p 8080:8080 -d ${{ secrets.DOCKER_REPO }}/chwipoclovadocker:latest

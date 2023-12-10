@@ -4,7 +4,11 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 import org.springframework.web.util.WebUtils;
@@ -20,11 +24,29 @@ import java.util.Map;
 @Component
 public class RequestFilter implements Filter {
 
+    @Autowired
+    private MultipartResolver multipartResolver;
+
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
-
+        //chain.doFilter(request, response);
         ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper((HttpServletRequest) request);
+
+        if (multipartResolver.isMultipart((HttpServletRequest) request)) {
+            // 멀티파트 요청으로부터 MultipartHttpServletRequest 획득
+            MultipartHttpServletRequest multipartRequest = multipartResolver.resolveMultipart((HttpServletRequest) request);
+
+            Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+            for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
+                MultipartFile file = entry.getValue();
+                // 파일 데이터를 다시 설정
+                byte[] fileBytes = file.getBytes(); // 파일 데이터 읽기
+                requestWrapper.setAttribute(entry.getKey(), fileBytes); // 새로운 요청(wrapper)에 파일 데이터 설정
+            }
+        }
+
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper((HttpServletResponse) response);
         CustomRequestWrapper customRequestWrapper = new CustomRequestWrapper(requestWrapper);
 

@@ -1,7 +1,9 @@
 package com.chwipoClova.common.config;
 
 import com.chwipoClova.common.exception.ExceptionCode;
+import com.chwipoClova.common.response.CommonMsgResponse;
 import com.chwipoClova.common.response.CommonResponse;
+import com.chwipoClova.common.response.MessageCode;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
@@ -49,8 +51,14 @@ public class ApiDocsOperationCustomizer implements OperationCustomizer {
             responseMessage = HttpStatus.OK.getReasonPhrase();
         } else {
             ExceptionCode exceptionCode = ExceptionCode.resolve(code);
-            responseCode = exceptionCode.getCode();
-            responseMessage = exceptionCode.getMessage();
+            if (exceptionCode != null) {
+                responseCode = exceptionCode.getCode();
+                responseMessage = exceptionCode.getMessage();
+            } else {
+                MessageCode messageCode = MessageCode.resolve(code);
+                responseCode = messageCode.getCode();
+                responseMessage = messageCode.getMessage();
+            }
         }
         wrapperSchema.addProperties("data", objSchema);
         wrapperSchema.addProperty("code", new StringSchema()._default(responseCode));
