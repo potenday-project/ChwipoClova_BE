@@ -52,6 +52,14 @@ public class User {
     @Schema(description = "소셜회원 ID")
     private Long snsId;
 
+    @Column(name = "thumbnailImage")
+    @Schema(description = "프로필 미리보기 이미지")
+    private String thumbnailImage;
+
+    @Column(name = "profileImage")
+    @Schema(description = "프로필 이미지")
+    private String profileImage;
+
     // @PrePersist 메서드 정의 (최초 등록시 호출)
     @PrePersist
     public void prePersist() {

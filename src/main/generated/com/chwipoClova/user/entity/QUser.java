@@ -25,11 +25,15 @@ public class QUser extends EntityPathBase<User> {
 
     public final StringPath name = createString("name");
 
+    public final StringPath profileImage = createString("profileImage");
+
     public final DateTimePath<java.util.Date> regDate = createDateTime("regDate", java.util.Date.class);
 
     public final NumberPath<Long> snsId = createNumber("snsId", Long.class);
 
     public final NumberPath<Integer> snsType = createNumber("snsType", Integer.class);
+
+    public final StringPath thumbnailImage = createString("thumbnailImage");
 
     public final NumberPath<Long> userId = createNumber("userId", Long.class);
 

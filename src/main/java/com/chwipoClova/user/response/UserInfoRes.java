@@ -24,4 +24,10 @@ public class UserInfoRes {
 
     @Schema(description = "수정일", example = "2023-12-09T10:13:17.838+00:00", name = "modifyDate")
     private Date modifyDate;
+
+    @Schema(description = "프로필 미리보기 이미지", example = "http://k.kakaocdn.net/", name = "thumbnailImage")
+    private String thumbnailImage;
+
+    @Schema(description = "프로필 이미지", example = "http://k.kakaocdn.net/", name = "profileImage")
+    private String profileImage;
 }

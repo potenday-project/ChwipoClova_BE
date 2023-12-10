@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -64,6 +65,8 @@ public class ResumeService {
         String orginalName = file.getOriginalFilename();
         assert orginalName != null;
 
+        String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+
         // 날짜 폴더 생성
         String folderPath = makeFolder();
 
@@ -73,7 +76,7 @@ public class ResumeService {
         long currentTimeMills = Timestamp.valueOf(LocalDateTime.now()).getTime();
 
         String filePath = uploadPath + File.separator + folderPath + File.separator;
-        String fileName = uuid + "_" + currentTimeMills;
+        String fileName = uuid + "_" + currentTimeMills + "." +extension;
         Long fileSize = file.getSize();
 
         if (fileSize > uploadMaxSize) {
@@ -150,8 +153,7 @@ public class ResumeService {
 
         userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
         Resume resume = resumeRepository.findByUserUserIdAndResumeId(userId, resumeId).orElseThrow(() -> new CommonException(ExceptionCode.RESUME_NULL.getMessage(), ExceptionCode.RESUME_NULL.getCode()));
-        resumeRepository.delete(resume);
-        return new CommonResponse<>(MessageCode.SUCCESS_DELETE.getCode(), null, MessageCode.SUCCESS_DELETE.getMessage());
+        return resumeDelete(resume);
     }
 
 
@@ -160,8 +162,24 @@ public class ResumeService {
         Long userId = resumeDeleteOldReq.getUserId();
 
         userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
-
         Resume resume = resumeRepository.findTop1ByUserUserIdOrderByRegDate(userId).orElseThrow(() -> new CommonException(ExceptionCode.RESUME_NULL.getMessage(), ExceptionCode.RESUME_NULL.getCode()));
+        return resumeDelete(resume);
+    }
+
+    private CommonResponse resumeDelete(Resume resume) {
+        String filePath = resume.getFilePath();
+        String fileName = resume.getFileName();
+
+        File file = new File(filePath + fileName);
+
+        if (!file.exists()) {
+            log.error("파일이 존재 하지 않습니다. {}", filePath + fileName);
+        } else {
+            if (!file.delete()) {
+                log.error("파일 삭제 실패했습니다. {}", filePath + fileName);
+            }
+        }
+
         resumeRepository.delete(resume);
         return new CommonResponse<>(MessageCode.SUCCESS_DELETE.getCode(), null, MessageCode.SUCCESS_DELETE.getMessage());
     }

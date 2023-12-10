@@ -26,12 +26,19 @@ public class KakaoUserInfo {
         private KakaoProfile profile;
 
         private String email;
+
     }
 
     @Getter
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class KakaoProfile {
         private String nickname;
+
+        private String thumbnail_image_url;
+
+        private String profile_image_url;
+
+        private boolean is_default_image;
     }
 
     public String getEmail() {
@@ -40,6 +47,18 @@ public class KakaoUserInfo {
 
     public String getNickname() {
         return kakaoAccount.profile.nickname;
+    }
+
+    public String getThumbnailImageUrl() {
+        return kakaoAccount.profile.thumbnail_image_url;
+    }
+
+    public String getProfileImageUrl() {
+        return kakaoAccount.profile.profile_image_url;
+    }
+
+    public boolean isDefaultImage() {
+        return kakaoAccount.profile.is_default_image;
     }
 
     public UserLoginType getOAuthProvider() {

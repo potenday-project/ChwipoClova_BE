@@ -87,6 +87,8 @@ public class UserService {
         String email = kakaoUserInfo.getEmail();
         String nickname = kakaoUserInfo.getNickname();
         Integer snsType = kakaoUserInfo.getOAuthProvider().getCode();
+        String thumbnailImageUrl = kakaoUserInfo.getThumbnailImageUrl();
+        String profileImageUrl = kakaoUserInfo.getProfileImageUrl();
 
         Optional<User> userInfo = userRepository.findBySnsTypeAndSnsId(snsType, snsId);
 
@@ -119,6 +121,8 @@ public class UserService {
                     .email(userInfoRst.getEmail())
                     .name(userInfoRst.getName())
                     .snsType(userInfoRst.getSnsType())
+                    .thumbnailImage(userInfoRst.getThumbnailImage())
+                    .profileImage(userInfoRst.getProfileImage())
                     .regDate(userInfoRst.getRegDate())
                     .modifyDate(userInfoRst.getModifyDate())
                     .build();
@@ -130,7 +134,9 @@ public class UserService {
                     .snsId(snsId)
                     .email(email)
                     .name(nickname)
-                    .snsType(kakaoUserInfo.getOAuthProvider().getCode())
+                    .snsType(snsType)
+                    .thumbnailImage(thumbnailImageUrl)
+                    .profileImage(profileImageUrl)
                     .regDate(new Date())
                     .build();
             userRepository.save(user);
@@ -191,6 +197,8 @@ public class UserService {
                 .userId(user.getUserId())
                 .email(user.getEmail())
                 .name(user.getName())
+                .thumbnailImage(user.getThumbnailImage())
+                .profileImage(user.getProfileImage())
                 .regDate(user.getRegDate())
                 .modifyDate(user.getModifyDate())
                 .build();

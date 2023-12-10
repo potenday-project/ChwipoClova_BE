@@ -34,4 +34,11 @@ public class UserLoginRes {
 
     @Schema(description = "소셜회원 ID", example = "11314", name = "snsId")
     private Long snsId;
+
+    @Schema(description = "프로필 미리보기 이미지", example = "http://k.kakaocdn.net/", name = "thumbnailImage")
+    private String thumbnailImage;
+
+    @Schema(description = "프로필 이미지", example = "http://k.kakaocdn.net/", name = "profileImage")
+    private String profileImage;
+
 }
