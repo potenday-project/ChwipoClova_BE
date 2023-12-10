@@ -2,6 +2,8 @@ package com.chwipoClova.user.service;
 
 import com.chwipoClova.common.dto.Token;
 import com.chwipoClova.common.dto.TokenDto;
+import com.chwipoClova.common.exception.CommonException;
+import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.repository.TokenRepository;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
@@ -10,6 +12,8 @@ import com.chwipoClova.user.dto.KakaoToken;
 import com.chwipoClova.user.dto.KakaoUserInfo;
 import com.chwipoClova.user.entity.User;
 import com.chwipoClova.user.repository.UserRepository;
+import com.chwipoClova.user.request.UserLoginReq;
+import com.chwipoClova.user.response.UserInfoRes;
 import com.chwipoClova.user.response.UserLoginRes;
 import com.chwipoClova.user.response.UserSnsUrlRes;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,6 +25,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -73,6 +78,7 @@ public class UserService {
         return userSnsUrlRes;
     }
 
+    @Transactional
     public CommonResponse kakaoLogin(String code, HttpServletResponse response) {
         KakaoToken kakaoToken = requestAccessToken(code);
         KakaoUserInfo kakaoUserInfo = requestOauthInfo(kakaoToken);
@@ -171,5 +177,22 @@ public class UserService {
     private void setHeader(HttpServletResponse response, TokenDto tokenDto) {
         response.addHeader(JwtUtil.ACCESS_TOKEN, tokenDto.getAccessToken());
         response.addHeader(JwtUtil.REFRESH_TOKEN, tokenDto.getRefreshToken());
+    }
+
+    public UserInfoRes selectUserInfo(String email) {
+        Optional<User> usersInfo = userRepository.findByEmailAndSnsType(email, 1);
+        if (!usersInfo.isPresent()) {
+            throw new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode());
+        }
+
+        User user = usersInfo.get();
+
+        return UserInfoRes.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .regDate(user.getRegDate())
+                .modifyDate(user.getModifyDate())
+                .build();
     }
 }

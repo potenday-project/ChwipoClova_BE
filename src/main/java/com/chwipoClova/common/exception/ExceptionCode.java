@@ -16,8 +16,20 @@ public enum ExceptionCode {
 
     SERVER_ERROR(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), "내부 서버 오류입니다."),
 
+
+
     // Custom Exception
-    SECURITY("600", "로그인이 필요합니다");
+    SECURITY("800", "로그인이 필요합니다"),
+
+    USER_NULL("801", "유저 정보가 올바르지 않습니다."),
+
+    FILE_EXT("850", "PDF 파일 형식이 아닙니다."),
+
+    FILE_SIZE("851", "파일 업로드 최대 크기는 50M 입니다."),
+
+    RESUME_NULL("860", "이력서 정보가 올바르지 않습니다.")
+
+    ;
 
     private static final ExceptionCode[] VALUES;
 
