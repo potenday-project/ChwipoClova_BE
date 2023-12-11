@@ -1,4 +1,4 @@
-package com.chwipoClova.resume.entity;
+package com.chwipoClova.recruit.entity;
 
 import com.chwipoClova.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,8 +10,8 @@ import org.hibernate.annotations.DynamicInsert;
 
 import java.util.Date;
 
-@Entity(name = "Resume")
-@Table(name = "Resume")
+@Entity(name = "Recruit")
+@Table(name = "Recruit")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties()
 @DynamicInsert
@@ -20,14 +20,22 @@ import java.util.Date;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "이력서 정보 VO")
-public class Resume {
+@Schema(description = "채용공고 정보 VO")
+public class Recruit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "resumeId")
-    @Schema(description = "이력서ID")
-    private Long resumeId;
+    @Column(name = "recruitId")
+    @Schema(description = "채용공고 ID")
+    private Long recruitId;
+
+    @Column(name = "title")
+    @Schema(description = "채용공고제목")
+    private String title;
+
+    @Column(name = "content")
+    @Schema(description = "채용공고텍스트")
+    private String content;
 
     @Column(name = "fileName")
     @Schema(description = "파일이름")
@@ -57,7 +65,6 @@ public class Resume {
     @JoinColumn(name = "userId")
     private User user;
 
-    // @PrePersist 메서드 정의 (최초 등록시 호출)
     @PrePersist
     public void prePersist() {
         this.regDate = new Date(); // 현재 날짜와 시간으로 등록일 설정

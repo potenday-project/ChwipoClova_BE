@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -38,13 +37,13 @@ import java.util.UUID;
 @Slf4j
 public class ResumeService {
 
-    @Value("${file.upload.path}")
+    @Value("${file.upload.resume.path}")
     private String uploadPath;
 
-    @Value("${file.upload.max-size}")
+    @Value("${file.upload.resume.max-size}")
     private Long uploadMaxSize;
 
-    @Value("${file.upload.type}")
+    @Value("${file.upload.resume.type}")
     private String uploadType;
 
     private final ResumeRepository resumeRepository;
@@ -52,18 +51,18 @@ public class ResumeService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ResumeUploadRes resumeUpload(Long userId, MultipartFile file) throws IOException {
+    public ResumeUploadRes uploadResume(Long userId, MultipartFile file) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
 
         String contentType = file.getContentType();
         assert contentType != null;
 
         if (contentType.toLowerCase().indexOf(uploadType) == -1) {
-            throw new CommonException(ExceptionCode.FILE_EXT.getMessage(), ExceptionCode.FILE_EXT.getCode());
+            throw new CommonException(ExceptionCode.FILE_EXT_PDF.getMessage(), ExceptionCode.FILE_EXT_PDF.getCode());
         }
 
-        String orginalName = file.getOriginalFilename();
-        assert orginalName != null;
+        String originalName = file.getOriginalFilename();
+        assert originalName != null;
 
         String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
 
@@ -89,6 +88,7 @@ public class ResumeService {
         file.transferTo(savePath);
 
         // TODO 업로드 성공 후 요약 저장
+        String summary = originalName + "요약";
 
         // TODO 등록 전 개수 제한 필요
         
@@ -97,7 +97,8 @@ public class ResumeService {
                 .fileName(fileName)
                 .filePath(filePath)
                 .fileSize(fileSize)
-                .orginalFileName(orginalName)
+                .originalFileName(originalName)
+                .summary(summary)
                 .user(user)
                 .build();
 
@@ -136,7 +137,7 @@ public class ResumeService {
         resumeList.stream().forEach(resume -> {
             ResumeListRes resumeListRes = ResumeListRes.builder()
                     .resumeId(resume.getResumeId())
-                    .fileName(resume.getOrginalFileName())
+                    .fileName(resume.getOriginalFileName())
                     .regDate(resume.getRegDate())
                     .build();
             resumeListResList.add(resumeListRes);

@@ -7,6 +7,7 @@ import com.chwipoClova.resume.response.ResumeListRes;
 import com.chwipoClova.resume.response.ResumeUploadRes;
 import com.chwipoClova.resume.service.ResumeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,17 +31,17 @@ public class ResumeController {
     private final ResumeService resumeService;
 
     @Operation(summary = "이력서 업로드", description = "이력서 업로드")
-    @PostMapping(path = "/resumeUpload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/uploadResume", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK")
     }
     )
-    public ResumeUploadRes resumeUpload(
+    public ResumeUploadRes uploadResume(
             @Schema(description = "userId", example = "1", name = "userId")
-            @RequestParam(value = "userId") Long userId,
+            @RequestPart(value = "userId") Long userId,
             @RequestPart(value = "file") MultipartFile file
     ) throws Exception {
-        return resumeService.resumeUpload(userId, file);
+        return resumeService.uploadResume(userId, file);
     }
 
     @Operation(summary = "이력서 조회", description = "이력서 조회")

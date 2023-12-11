@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 public class ResumeUploadReq {
 
-    private MultipartFile file;
+    @Schema(description = "유저 Id", example = "1", name = "userId")
+    private Long userId;
 
 }
