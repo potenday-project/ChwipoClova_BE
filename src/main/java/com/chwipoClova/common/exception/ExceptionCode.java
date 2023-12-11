@@ -27,11 +27,17 @@ public enum ExceptionCode {
 
     FILE_EXT_IMAGE("851", "IMAGE 파일 형식이 아닙니다."),
 
-    FILE_SIZE("860", "파일 업로드 최대 크기는 50M 입니다."),
+    FILE_SIZE("852", "파일 업로드 최대 크기는 50M 입니다."),
 
-    RESUME_NULL("870", "이력서 정보가 올바르지 않습니다."),
+    RESUME_NULL("860", "이력서 정보가 올바르지 않습니다."),
 
-    RECRUIT_CONTENT_NULL("880", "채용공고 정보가 올바르지 않습니다.")
+    RECRUIT_CONTENT_NULL("870", "채용공고 정보가 올바르지 않습니다."),
+
+    INTERVIEW_NULL("880", "면접 정보가 올바르지 않습니다."),
+
+    QA_NULL("890", "질문 정보가 올바르지 않습니다."),
+
+    TOKEN_NULL("950", "토큰정보가 올바르지 않습니다.")
 
     ;
 

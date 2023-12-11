@@ -2,7 +2,10 @@ package com.chwipoClova.interview.controller;
 
 import com.chwipoClova.interview.request.InterviewInsertReq;
 import com.chwipoClova.interview.response.InterviewInsertRes;
+import com.chwipoClova.interview.response.InterviewListRes;
+import com.chwipoClova.interview.response.InterviewRes;
 import com.chwipoClova.interview.service.InterviewService;
+import com.chwipoClova.resume.response.ResumeListRes;
 import com.chwipoClova.resume.response.ResumeUploadRes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -38,6 +43,29 @@ public class InterviewController {
             @RequestPart(value = "file", required = false) MultipartFile file
     ) throws Exception {
         return interviewService.insertInterview(interviewInsertReq, file);
+    }
+
+    @Operation(summary = "면접 결과 조회", description = "면접 결과 조회")
+    @GetMapping(path = "/getInterview")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK")
+    }
+    )
+    public InterviewRes getInterview(
+            @Schema(description = "userId", example = "1", name = "userId") @RequestParam(name = "userId") Long userId,
+            @Schema(description = "interviewId", example = "1", name = "interviewId") @RequestParam(name = "interviewId") Long interviewId
+    ) {
+        return interviewService.selectInterview(userId, interviewId);
+    }
+
+    @Operation(summary = "면접 목록 조회", description = "면접 목록 조회")
+    @GetMapping(path = "/getInterviewList")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK")
+    }
+    )
+    public List<InterviewListRes> getInterviewList(@Schema(description = "userId", example = "1", name = "userId") @RequestParam(name = "userId") Long userId) {
+        return interviewService.selectInterviewList(userId);
     }
 
 }

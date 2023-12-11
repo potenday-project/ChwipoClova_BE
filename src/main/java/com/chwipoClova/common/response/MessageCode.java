@@ -9,6 +9,8 @@ import lombok.ToString;
 @AllArgsConstructor
 public enum MessageCode {
 
+    OK("200", "OK"),
+
     SUCCESS_SAVE("600", "정상적으로 저장되었습니다."),
 
     SUCCESS_DELETE("601", "정상적으로 삭제되었습니다."),

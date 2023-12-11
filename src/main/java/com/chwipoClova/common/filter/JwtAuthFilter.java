@@ -1,5 +1,6 @@
 package com.chwipoClova.common.filter;
 
+import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.utils.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -89,7 +90,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         response.setStatus(status.value());
         response.setContentType("application/json");
         try {
-            String json = new ObjectMapper().writeValueAsString(new CommonResponse<String>("RefreshToken Expired", null,"878"));
+            String json = new ObjectMapper().writeValueAsString(new CommonResponse<String>(ExceptionCode.TOKEN_NULL.getCode(), null,ExceptionCode.TOKEN_NULL.getMessage()));
             response.getWriter().write(json);
         } catch (Exception e) {
             log.error(e.getMessage());

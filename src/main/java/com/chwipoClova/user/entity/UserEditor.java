@@ -6,13 +6,13 @@ import lombok.Getter;
 import java.util.Date;
 
 @Getter
-public class UsersEditor {
+public class UserEditor {
 
     private String name;
     private Date modifyDate;
 
     @Builder
-    public UsersEditor(String name, Date modifyDate) {
+    public UserEditor(String name, Date modifyDate) {
         this.name = name;
         this.modifyDate = modifyDate;
     }

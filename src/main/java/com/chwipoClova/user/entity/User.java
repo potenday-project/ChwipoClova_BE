@@ -72,13 +72,13 @@ public class User {
         this.modifyDate = new Date(); // 현재 날짜와 시간으로 수정일 업데이트
     }
 
-    public UsersEditor.UsersEditorBuilder toEditor() {
-        return UsersEditor.builder()
+    public UserEditor.UserEditorBuilder toEditor() {
+        return UserEditor.builder()
                 .name(name)
                 .modifyDate(modifyDate);
     }
 
-    public void edit(UsersEditor usersEditor) {
+    public void edit(UserEditor usersEditor) {
         name = usersEditor.getName();
         modifyDate = usersEditor.getModifyDate();
     }
