@@ -48,9 +48,4 @@ public class SwaggerConfig {
                 .description("Springdoc을 사용한 Swagger UI")
                 .version("1.0.0");
     }
-
-    @Bean
-    public MultipartResolver multipartResolver() {
-        return new StandardServletMultipartResolver();
-    }
 }
