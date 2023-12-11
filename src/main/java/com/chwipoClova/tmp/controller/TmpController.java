@@ -21,7 +21,7 @@ public class TmpController {
 
     private final TmpService tmpService;
 
-    @Operation(summary = "Tmp 목록 조회", description = "Tmp 목록 조회")
+    @Operation(summary = "Tmp 목록 조회 (기본 테스트)", description = "Tmp 목록 조회 (기본 테스트)")
     @GetMapping("/")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")}
     )
