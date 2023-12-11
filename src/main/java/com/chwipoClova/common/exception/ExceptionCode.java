@@ -23,11 +23,15 @@ public enum ExceptionCode {
 
     USER_NULL("801", "유저 정보가 올바르지 않습니다."),
 
-    FILE_EXT("850", "PDF 파일 형식이 아닙니다."),
+    FILE_EXT_PDF("850", "PDF 파일 형식이 아닙니다."),
 
-    FILE_SIZE("851", "파일 업로드 최대 크기는 50M 입니다."),
+    FILE_EXT_IMAGE("851", "IMAGE 파일 형식이 아닙니다."),
 
-    RESUME_NULL("860", "이력서 정보가 올바르지 않습니다.")
+    FILE_SIZE("860", "파일 업로드 최대 크기는 50M 입니다."),
+
+    RESUME_NULL("870", "이력서 정보가 올바르지 않습니다."),
+
+    RECRUIT_CONTENT_NULL("880", "채용공고 정보가 올바르지 않습니다.")
 
     ;
 

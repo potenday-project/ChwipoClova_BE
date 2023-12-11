@@ -1,4 +1,4 @@
-package com.chwipoClova.resume.entity;
+package com.chwipoClova.interview.entity;
 
 import com.chwipoClova.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,8 +10,8 @@ import org.hibernate.annotations.DynamicInsert;
 
 import java.util.Date;
 
-@Entity(name = "Resume")
-@Table(name = "Resume")
+@Entity(name = "Interview")
+@Table(name = "Interview")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties()
 @DynamicInsert
@@ -20,38 +20,33 @@ import java.util.Date;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "이력서 정보 VO")
-public class Resume {
+public class Interview {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "resumeId")
-    @Schema(description = "이력서ID")
-    private Long resumeId;
+    @Column(name = "interviewId")
+    @Schema(description = "면접ID")
+    private Long interviewId;
 
-    @Column(name = "fileName")
-    @Schema(description = "파일이름")
-    private String fileName;
+    @Column(name = "title")
+    @Schema(description = "제목")
+    private String title;
 
-    @Column(name = "filePath")
-    @Schema(description = "파일경로")
-    private String filePath;
+    @Column(name = "resumeSummary")
+    @Schema(description = "이력서 요약")
+    private String resumeSummary;
 
-    @Column(name = "fileSize")
-    @Schema(description = "파일크기")
-    private Long fileSize;
-
-    @Column(name = "originalFileName")
-    @Schema(description = "원본파일이름")
-    private String originalFileName;
-
-    @Column(name = "summary")
-    @Schema(description = "요약")
-    private String summary;
+    @Column(name = "recruitSummary")
+    @Schema(description = "채용공고 요약")
+    private String recruitSummary;
 
     @Column(name = "regDate")
     @Schema(description = "등록일")
     private Date regDate;
+
+    @Column(name = "modifyDate")
+    @Schema(description = "수정일")
+    private Date modifyDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId")
@@ -62,4 +57,11 @@ public class Resume {
     public void prePersist() {
         this.regDate = new Date(); // 현재 날짜와 시간으로 등록일 설정
     }
+
+    // @PreUpdate 메서드 정의 (업데이트 시 호출)
+    @PreUpdate
+    public void preUpdate() {
+        this.modifyDate = new Date(); // 현재 날짜와 시간으로 수정일 업데이트
+    }
+
 }
