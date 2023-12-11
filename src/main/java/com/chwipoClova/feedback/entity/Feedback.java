@@ -1,8 +1,8 @@
-package com.chwipoClova.qa.entity;
+package com.chwipoClova.feedback.entity;
 
-import com.chwipoClova.interview.entity.Interview;
+
+import com.chwipoClova.qa.entity.Qa;
 import com.chwipoClova.user.entity.User;
-import com.chwipoClova.user.entity.UserEditor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,8 +12,8 @@ import org.hibernate.annotations.DynamicInsert;
 
 import java.util.Date;
 
-@Entity(name = "Qa")
-@Table(name = "Qa")
+@Entity(name = "Feedback")
+@Table(name = "Feedback")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties()
 @DynamicInsert
@@ -22,24 +22,21 @@ import java.util.Date;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class Qa {
+public class Feedback {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "qaId")
-    @Schema(description = "질문답변 ID")
-    private Long qaId;
+    @Column(name = "feedbackId")
+    @Schema(description = "피드백 ID")
+    private Long feedbackId;
 
-    @Column(name = "question")
-    @Schema(description = "질문")
-    private String question;
+    @Column(name = "type")
+    @Schema(description = "피드백타입(1, 2, 3)")
+    private Integer type;
 
-    @Column(name = "answer")
-    @Schema(description = "답변")
-    private String answer;
-
-    @Column(name = "aiAnswer")
-    @Schema(description = "AI답변")
-    private String aiAnswer;
+    @Column(name = "content")
+    @Schema(description = "피드백내용")
+    private String content;
 
     @Column(name = "regDate")
     @Schema(description = "등록일")
@@ -50,27 +47,17 @@ public class Qa {
     private Date modifyDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interviewId")
-    private Interview interview;
+    @JoinColumn(name = "qaId")
+    private Qa qa;
 
+    // @PrePersist 메서드 정의 (최초 등록시 호출)
     @PrePersist
     public void prePersist() {
         this.regDate = new Date(); // 현재 날짜와 시간으로 등록일 설정
     }
 
-    // @PreUpdate 메서드 정의 (업데이트 시 호출)
     @PreUpdate
     public void preUpdate() {
         this.modifyDate = new Date(); // 현재 날짜와 시간으로 수정일 업데이트
     }
-
-    public QaEditor.QaEditorBuilder toEditor() {
-        return QaEditor.builder()
-                .answer(answer);
-    }
-
-    public void edit(QaEditor qaEditor) {
-        answer = qaEditor.getAnswer();
-    }
-
 }

@@ -2,11 +2,18 @@ package com.chwipoClova.interview.service;
 
 import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
+import com.chwipoClova.feedback.entity.Feedback;
+import com.chwipoClova.feedback.response.FeedbackListRes;
+import com.chwipoClova.feedback.service.FeedbackService;
 import com.chwipoClova.interview.entity.Interview;
 import com.chwipoClova.interview.repository.InterviewRepository;
 import com.chwipoClova.interview.request.InterviewInsertReq;
 import com.chwipoClova.interview.response.InterviewInsertRes;
+import com.chwipoClova.interview.response.InterviewListRes;
+import com.chwipoClova.interview.response.InterviewRes;
 import com.chwipoClova.qa.request.QaQuestionInsertReq;
+import com.chwipoClova.qa.response.QaCountRes;
+import com.chwipoClova.qa.response.QaListRes;
 import com.chwipoClova.qa.response.QaQuestionInsertRes;
 import com.chwipoClova.qa.service.QaService;
 import com.chwipoClova.recruit.request.RecruitInsertReq;
@@ -40,6 +47,8 @@ public class InterviewService {
     private final InterviewRepository interviewRepository;
 
     private final QaService qaService;
+
+    private final FeedbackService feedbackService;
 
     @Transactional
     public InterviewInsertRes insertInterview(InterviewInsertReq interviewInsertReq, MultipartFile file) throws IOException {
@@ -102,4 +111,47 @@ public class InterviewService {
                 .build();
     }
 
+    public InterviewRes selectInterview(Long userId, Long interviewId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
+        Interview interview = interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+
+        List<QaListRes> qaListRes = qaService.selectQaList(interview.getInterviewId());
+
+        qaListRes.stream().forEach(qaListRes1 -> {
+            List<FeedbackListRes> feedbackListRes = feedbackService.selectFeedbackList(qaListRes1.getQaId());
+            qaListRes1.setFeedbackData(feedbackListRes);
+        });
+
+        return InterviewRes.builder()
+                .interviewId(interview.getInterviewId())
+                .userId(user.getUserId())
+                .title(interview.getTitle())
+                .regDate(interview.getRegDate())
+                .modifyDate(interview.getModifyDate())
+                .qaData(qaListRes)
+                .build();
+    }
+
+    public List<InterviewListRes> selectInterviewList(Long userId) {
+        List<InterviewListRes> interviewListRes = new ArrayList<>();
+
+        List<Interview> interviewList = interviewRepository.findByUserUserIdOrderByRegDate(userId);
+
+        interviewList.stream().forEach(interview -> {
+            QaCountRes qaCountRes = qaService.selectQaListUseCount(interview.getInterviewId());
+
+            InterviewListRes interviewListRes1 = InterviewListRes.builder()
+                    .interviewId(interview.getInterviewId())
+                    .userId(interview.getUser().getUserId())
+                    .title(interview.getTitle())
+                    .useCnt(qaCountRes.getUseCnt())
+                    .totalCnt(qaCountRes.getTotalCnt())
+                    .regDate(interview.getRegDate())
+                    .modifyDate(interview.getModifyDate())
+                    .build();
+            interviewListRes.add(interviewListRes1);
+        });
+
+        return interviewListRes;
+    }
 }

@@ -182,6 +182,6 @@ public class ResumeService {
         }
 
         resumeRepository.delete(resume);
-        return new CommonResponse<>(MessageCode.SUCCESS_DELETE.getCode(), null, MessageCode.SUCCESS_DELETE.getMessage());
+        return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
 }
