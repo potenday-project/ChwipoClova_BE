@@ -6,8 +6,10 @@ import jakarta.servlet.MultipartConfigElement;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @OpenAPIDefinition(servers = {@Server(url = "/", description = "Default Server URL")})
+@EnableScheduling
 @SpringBootApplication
 public class ChwipoClovaApplication {
 
