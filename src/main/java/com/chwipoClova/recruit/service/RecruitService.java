@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -149,5 +150,17 @@ public class RecruitService {
             log.info("mkdirs : {}", mkdirs);
         }
         return folderPath;
+    }
+
+    @Transactional
+    public void deleteBeforeRecruit() {
+        Timestamp baseDate = Timestamp.valueOf(LocalDate.now().minusDays(14).atStartOfDay());
+        List<Recruit> recruitList = recruitRepository.findByRegDateLessThanEqual(baseDate);
+        if (recruitList != null) {
+            if (recruitList.size() > 0) {
+                log.info("deleteBeforeRecruit size {}, baseDate {}", recruitList.size() , baseDate);
+                recruitRepository.deleteAll(recruitList);
+            }
+        }
     }
 }
