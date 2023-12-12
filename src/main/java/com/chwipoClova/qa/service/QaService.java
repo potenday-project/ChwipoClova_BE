@@ -4,10 +4,10 @@ import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
-import com.chwipoClova.feedback.entity.Feedback;
 import com.chwipoClova.feedback.request.FeedbackInsertReq;
 import com.chwipoClova.feedback.response.FeedbackListRes;
 import com.chwipoClova.feedback.service.FeedbackService;
+import com.chwipoClova.interview.entity.Interview;
 import com.chwipoClova.interview.repository.InterviewRepository;
 import com.chwipoClova.qa.entity.Qa;
 import com.chwipoClova.qa.entity.QaEditor;
@@ -16,6 +16,7 @@ import com.chwipoClova.qa.request.QaAnswerDataInsertReq;
 import com.chwipoClova.qa.request.QaAnswerInsertReq;
 import com.chwipoClova.qa.request.QaQuestionInsertReq;
 import com.chwipoClova.qa.response.QaCountRes;
+import com.chwipoClova.qa.response.QaListForFeedbackRes;
 import com.chwipoClova.qa.response.QaListRes;
 import com.chwipoClova.qa.response.QaQuestionInsertRes;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
 @Service
@@ -81,18 +83,23 @@ public class QaService {
         List<FeedbackInsertReq> feedbackInsertListReq = new ArrayList<>();
 
         qaAnswerDataInsertReqList.stream().forEach(qaAnswerDataInsertReq -> {
-            Qa qa = qaRepository.findByInterviewInterviewIdAndQaId(interviewId, qaAnswerDataInsertReq.getQaId()).orElseThrow(() -> new CommonException(ExceptionCode.QA_NULL.getMessage(), ExceptionCode.QA_NULL.getCode()));
-            QaEditor.QaEditorBuilder editorBuilder = qa.toEditor();
-            QaEditor qaEditor = editorBuilder.answer(qaAnswerDataInsertReq.getAnswer())
-                    .build();
-            qa.edit(qaEditor);
+            String answer = qaAnswerDataInsertReq.getAnswer();
 
-            // 피드백 정보
-            FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
-            feedbackInsertReq.setQaId(qa.getQaId());
-            feedbackInsertReq.setAnswer(qa.getAnswer());
-            feedbackInsertReq.setQuestion(qa.getQuestion());
-            feedbackInsertListReq.add(feedbackInsertReq);
+            // 답변 내용이 있을 경우 답변 저장 및 피드백 생성
+            if (StringUtils.isNotBlank(answer)) {
+                Qa qa = qaRepository.findByInterviewInterviewIdAndQaId(interviewId, qaAnswerDataInsertReq.getQaId()).orElseThrow(() -> new CommonException(ExceptionCode.QA_NULL.getMessage(), ExceptionCode.QA_NULL.getCode()));
+                QaEditor.QaEditorBuilder editorBuilder = qa.toEditor();
+                QaEditor qaEditor = editorBuilder.answer(qaAnswerDataInsertReq.getAnswer())
+                        .build();
+                qa.edit(qaEditor);
+
+                // 피드백 정보
+                FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
+                feedbackInsertReq.setQaId(qa.getQaId());
+                feedbackInsertReq.setAnswer(qa.getAnswer());
+                feedbackInsertReq.setQuestion(qa.getQuestion());
+                feedbackInsertListReq.add(feedbackInsertReq);
+            }
         });
 
         // 피드백 요청 및 등록
@@ -112,7 +119,6 @@ public class QaService {
                     .qaId(qa.getQaId())
                     .question(qa.getQuestion())
                     .answer(qa.getAnswer())
-                    //.aiAnswer(qa.getAiAnswer())
                     .regDate(qa.getRegDate())
                     .modifyDate(qa.getModifyDate())
                     .build();
@@ -121,22 +127,46 @@ public class QaService {
         return qaListResList;
     }
 
+    public List<QaListForFeedbackRes> selectQaListForFeedback(Long interviewId) {
+        List<QaListRes> qaListRes = selectQaList(interviewId);
+        List<QaListForFeedbackRes> listForFeedbackResList = new ArrayList<>();
+
+        qaListRes.stream().forEach(qaListRes1 -> {
+            List<FeedbackListRes> feedbackListRes = feedbackService.selectFeedbackList(qaListRes1.getQaId());
+            QaListForFeedbackRes qalistForFeedbackRes = QaListForFeedbackRes.builder()
+                    .interviewId(qaListRes1.getInterviewId())
+                    .qaId(qaListRes1.getQaId())
+                    .question(qaListRes1.getQuestion())
+                    .answer(qaListRes1.getAnswer())
+                    .regDate(qaListRes1.getRegDate())
+                    .modifyDate(qaListRes1.getModifyDate())
+                    .feedbackData(feedbackListRes)
+                    .build();
+            listForFeedbackResList.add(qalistForFeedbackRes);
+        });
+        return listForFeedbackResList;
+    }
+
     public QaCountRes selectQaListUseCount(Long interviewId) {
         List<QaListRes> qaListRes = selectQaList(interviewId);
 
         AtomicInteger index = new AtomicInteger(0); // 시작 인덱스
+        AtomicReference<Long> lastQaIdAtomic = new AtomicReference<>();
         qaListRes.stream().forEach(qaListRes1 -> {
             if (StringUtils.isNotBlank(qaListRes1.getAnswer())) {
                 index.getAndIncrement();
+                lastQaIdAtomic.set(qaListRes1.getQaId());
             }
         });
 
         int useCnt = index.get();
         int totalCnt = qaListRes.size();
+        Long lastQaId = lastQaIdAtomic.get();
 
         return QaCountRes.builder()
                 .useCnt(useCnt)
                 .totalCnt(totalCnt)
+                .lastQaId(lastQaId)
                 .build();
     }
 

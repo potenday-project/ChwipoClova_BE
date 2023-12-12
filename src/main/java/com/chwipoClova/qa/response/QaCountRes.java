@@ -13,4 +13,7 @@ public class QaCountRes {
 
     @Schema(description = "총개수", example = "10", name = "totalCnt")
     private Integer totalCnt;
+
+    @Schema(description = "마지막 질문 번호", example = "1", name = "lastQaId")
+    private Long lastQaId;
 }

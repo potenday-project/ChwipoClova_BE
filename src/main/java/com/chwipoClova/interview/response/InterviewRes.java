@@ -1,5 +1,6 @@
 package com.chwipoClova.interview.response;
 
+import com.chwipoClova.qa.response.QaListForFeedbackRes;
 import com.chwipoClova.qa.response.QaListRes;
 import com.chwipoClova.qa.response.QaQuestionInsertRes;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,9 +22,7 @@ public class InterviewRes {
     private String title;
     @Schema(description = "등록일", example = "2023-12-09T10:13:17.838+00:00", name = "regDate")
     private Date regDate;
-    @Schema(description = "수정일", example = "2023-12-09T10:13:17.838+00:00", name = "modifyDate")
-    private Date modifyDate;
     @Schema(description = "질문데이터", name = "qaData")
-    private List<QaListRes> qaData;
+    private List<QaListForFeedbackRes> qaData;
 
 }

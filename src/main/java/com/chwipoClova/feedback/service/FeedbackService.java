@@ -5,20 +5,29 @@ import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
 import com.chwipoClova.feedback.entity.Feedback;
+import com.chwipoClova.feedback.entity.FeedbackEditor;
 import com.chwipoClova.feedback.repository.FeedbackRepository;
+import com.chwipoClova.feedback.request.FeedbackGenerateReq;
 import com.chwipoClova.feedback.request.FeedbackInsertReq;
 import com.chwipoClova.feedback.response.FeedBackApiRes;
 import com.chwipoClova.feedback.response.FeedbackListRes;
+import com.chwipoClova.interview.entity.Interview;
+import com.chwipoClova.interview.repository.InterviewRepository;
 import com.chwipoClova.qa.entity.Qa;
+import com.chwipoClova.qa.entity.QaEditor;
 import com.chwipoClova.qa.repository.QaRepository;
+import com.chwipoClova.user.entity.User;
+import com.chwipoClova.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -29,10 +38,14 @@ public class FeedbackService {
 
     private final QaRepository qaRepository;
 
+    private final InterviewRepository interviewRepository;
+
+    private final UserRepository userRepository;
+
     @Transactional
     public CommonResponse insertFeedback(List<FeedbackInsertReq> feedbackInsertListReq) throws IOException {
 
-        // TODO 피드백 연동 필요함
+        // TODO 피드백 연동 필요함 답변이 있는 경우만 전달하자
         // 테스트 데이터
         List<FeedBackApiRes> feedBackApiListRes = new ArrayList<>();
         feedbackInsertListReq.stream().forEach(feedbackInsertReq -> {
@@ -49,17 +62,7 @@ public class FeedbackService {
             feedBackApiListRes.add(feedBackApiRes2);
         });
 
-        feedBackApiListRes.stream().forEach(feedBackApiRes -> {
-            Long qaId = feedBackApiRes.getQaId();
-            Qa qa = qaRepository.findById(qaId).orElseThrow(() -> new CommonException(ExceptionCode.QA_NULL.getMessage(), ExceptionCode.QA_NULL.getCode()));
-
-            Feedback feedback = Feedback.builder()
-                    .type(feedBackApiRes.getType())
-                    .content(feedBackApiRes.getContent())
-                    .qa(qa)
-                    .build();
-            feedbackRepository.save(feedback);
-        });
+        insertAllFeedback(feedBackApiListRes);
 
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
@@ -82,4 +85,64 @@ public class FeedbackService {
         return feedbackListResList;
     }
 
+    @Transactional
+    public CommonResponse generateFeedback(FeedbackGenerateReq feedbackGenerateReq) {
+        Long interviewId = feedbackGenerateReq.getInterviewId();
+        Long userId = feedbackGenerateReq.getUserId();
+
+        userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
+        interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+
+        List<Qa> qaList = qaRepository.findByInterviewInterviewIdOrderByQaId(interviewId);
+
+        // TODO 피드백 연동 필요함 답변이 있는 경우만 전달하자
+        List<FeedBackApiRes> feedBackApiListRes = new ArrayList<>();
+        qaList.stream().forEach(qa -> {
+            String answer = qa.getAnswer();
+            if (StringUtils.isNotBlank(answer)) {
+                Long qaId = qa.getQaId();
+                FeedBackApiRes feedBackApiRes = new FeedBackApiRes();
+                feedBackApiRes.setQaId(qaId);
+                feedBackApiRes.setType(1);
+                feedBackApiRes.setContent("재생성 피드백1입니다.");
+                feedBackApiListRes.add(feedBackApiRes);
+                FeedBackApiRes feedBackApiRes2 = new FeedBackApiRes();
+                feedBackApiRes2.setQaId(qaId);
+                feedBackApiRes2.setType(2);
+                feedBackApiRes2.setContent("재생성 피드백2입니다.");
+                feedBackApiListRes.add(feedBackApiRes2);
+            }
+        });
+
+        insertAllFeedback(feedBackApiListRes);
+        return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
+    }
+
+    @Transactional
+    public void insertAllFeedback(List<FeedBackApiRes> feedBackApiListRes) {
+        feedBackApiListRes.stream().forEach(feedBackApiRes -> {
+            Long qaId = feedBackApiRes.getQaId();
+            Qa qa = qaRepository.findById(qaId).orElseThrow(() -> new CommonException(ExceptionCode.QA_NULL.getMessage(), ExceptionCode.QA_NULL.getCode()));
+
+            Integer type = feedBackApiRes.getType();
+            String content = feedBackApiRes.getContent();
+            // 피드백 데이터가 있다면 수정 없으면 등록
+            Optional<Feedback> feedbackOptional = feedbackRepository.findByQaQaIdAndType(qaId, type);
+            if (feedbackOptional.isPresent()) {
+
+                Feedback feedbackInfo = feedbackOptional.get();
+                FeedbackEditor.FeedbackEditorBuilder editorBuilder = feedbackInfo.toEditor();
+                FeedbackEditor feedbackEditor = editorBuilder.content(content)
+                        .build();
+                feedbackInfo.edit(feedbackEditor);
+            } else {
+                Feedback feedback = Feedback.builder()
+                        .type(type)
+                        .content(content)
+                        .qa(qa)
+                        .build();
+                feedbackRepository.save(feedback);
+            }
+        });
+    }
 }

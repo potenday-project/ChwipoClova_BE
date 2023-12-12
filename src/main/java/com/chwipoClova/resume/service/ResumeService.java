@@ -46,6 +46,9 @@ public class ResumeService {
     @Value("${file.upload.resume.type}")
     private String uploadType;
 
+    @Value("${limit.size.resume}")
+    private Integer resumeLimitSize;
+
     private final ResumeRepository resumeRepository;
 
     private final UserRepository userRepository;
@@ -63,6 +66,12 @@ public class ResumeService {
 
         String originalName = file.getOriginalFilename();
         assert originalName != null;
+
+        // 기존 이력서 목록이 3건 이상이면 오류 발생
+        List<Resume> resumeList = resumeRepository.findByUserUserIdOrderByRegDate(user.getUserId());
+        if (resumeList != null && resumeList.size() >= resumeLimitSize) {
+            throw new CommonException(ExceptionCode.RESUME_LIST_OVER.getMessage(), ExceptionCode.RESUME_LIST_OVER.getCode());
+        }
 
         String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
 
