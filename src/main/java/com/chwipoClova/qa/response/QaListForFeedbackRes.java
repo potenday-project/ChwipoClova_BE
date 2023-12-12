@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class QaListRes {
+public class QaListForFeedbackRes {
 
     @Schema(description = "면접 ID", example = "1", name = "interviewId")
     private Long interviewId;
@@ -29,4 +29,7 @@ public class QaListRes {
 
     @Schema(description = "수정일", example = "2023-12-09T10:13:17.838+00:00", name = "modifyDate")
     private Date modifyDate;
+
+    @Schema(description = "피드백 데이터",  name = "feedbackData")
+    private List<FeedbackListRes> feedbackData;
 }

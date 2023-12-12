@@ -31,9 +31,13 @@ public enum ExceptionCode {
 
     RESUME_NULL("860", "이력서 정보가 올바르지 않습니다."),
 
+    RESUME_LIST_OVER("861", "이력서 최대 개수를 초과하였습니다."),
+
     RECRUIT_CONTENT_NULL("870", "채용공고 정보가 올바르지 않습니다."),
 
     INTERVIEW_NULL("880", "면접 정보가 올바르지 않습니다."),
+
+    INTERVIEW_LIST_OVER("881", "면접 최대 개수를 초과하였습니다."),
 
     QA_NULL("890", "질문 정보가 올바르지 않습니다."),
 
