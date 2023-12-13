@@ -1,18 +1,22 @@
 package com.chwipoClova.user.controller;
 
+import com.chwipoClova.common.response.CommonMsgResponse;
 import com.chwipoClova.common.response.CommonResponse;
+import com.chwipoClova.common.response.MessageCode;
 import com.chwipoClova.user.response.UserInfoRes;
 import com.chwipoClova.user.response.UserLoginRes;
 import com.chwipoClova.user.response.UserSnsUrlRes;
 import com.chwipoClova.user.service.UserService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -71,5 +75,17 @@ public class UserController {
     )
     public String kakaoCallback(@Schema(description = "로그인코드", example = "1", name = "code") @RequestParam(name = "code") String code, HttpServletResponse response) throws Exception {
         return code;
+    }
+
+    @Operation(summary = "로그아웃", description = "로그아웃")
+    @GetMapping("/logout")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))
+    }
+    )
+    public CommonResponse logout(@Schema(description = "유저 ID", example = "1", name = "userId") @NotBlank(message = "UserID를 입력해주세요.") Long userId,
+                                    @Parameter(hidden = true) HttpServletResponse response
+    ) {
+        return userService.logout(response, userId);
     }
 }

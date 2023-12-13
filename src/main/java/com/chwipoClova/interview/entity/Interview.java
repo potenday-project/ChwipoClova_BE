@@ -1,5 +1,6 @@
 package com.chwipoClova.interview.entity;
 
+import com.chwipoClova.qa.entity.QaEditor;
 import com.chwipoClova.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -40,6 +41,14 @@ public class Interview {
     @Schema(description = "채용공고 요약")
     private String recruitSummary;
 
+    @Column(name = "status")
+    @Schema(description = "상태 (0 : 미완료, 1 : 완료)")
+    private Integer status;
+
+    @Column(name = "feedback")
+    @Schema(description = "면접관의속마음")
+    private String feedback;
+    
     @Column(name = "regDate")
     @Schema(description = "등록일")
     private Date regDate;
@@ -52,6 +61,16 @@ public class Interview {
     @PrePersist
     public void prePersist() {
         this.regDate = new Date(); // 현재 날짜와 시간으로 등록일 설정
+    }
+
+
+    public InterviewEditor.InterviewEditorBuilder toEditor() {
+        return InterviewEditor.builder()
+                .status(status);
+    }
+
+    public void edit(InterviewEditor interviewEditor) {
+        status = interviewEditor.getStatus();
     }
 
 }

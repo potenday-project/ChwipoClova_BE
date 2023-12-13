@@ -25,6 +25,9 @@ public class InterviewListRes {
     @Schema(description = "답변개수", example = "1", name = "useCnt")
     private Integer useCnt;
 
+    @Schema(description = "완료여부(0: 미완성, 1: 완성)", example = "1", name = "status")
+    private Integer status;
+
     @Schema(description = "등록일", example = "2023-12-09T10:13:17.838+00:00", name = "regDate")
     private Date regDate;
 }

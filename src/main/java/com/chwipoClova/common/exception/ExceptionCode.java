@@ -39,6 +39,10 @@ public enum ExceptionCode {
 
     INTERVIEW_LIST_OVER("881", "면접 최대 개수를 초과하였습니다."),
 
+    INTERVIEW_COMPLETE("882", "완료 된 면접 입니다."),
+
+    INTERVIEW_NOT_COMPLETE("883", "미완료 된 면접 입니다."),
+
     QA_NULL("890", "질문 정보가 올바르지 않습니다."),
 
     TOKEN_NULL("950", "토큰정보가 올바르지 않습니다.")

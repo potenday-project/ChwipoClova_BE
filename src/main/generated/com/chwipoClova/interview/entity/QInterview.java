@@ -22,6 +22,8 @@ public class QInterview extends EntityPathBase<Interview> {
 
     public static final QInterview interview = new QInterview("interview");
 
+    public final StringPath feedback = createString("feedback");
+
     public final NumberPath<Long> interviewId = createNumber("interviewId", Long.class);
 
     public final StringPath recruitSummary = createString("recruitSummary");
@@ -29,6 +31,8 @@ public class QInterview extends EntityPathBase<Interview> {
     public final DateTimePath<java.util.Date> regDate = createDateTime("regDate", java.util.Date.class);
 
     public final StringPath resumeSummary = createString("resumeSummary");
+
+    public final NumberPath<Integer> status = createNumber("status", Integer.class);
 
     public final StringPath title = createString("title");
 
