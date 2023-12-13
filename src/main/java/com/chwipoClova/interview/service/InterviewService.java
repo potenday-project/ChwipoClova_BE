@@ -2,13 +2,20 @@ package com.chwipoClova.interview.service;
 
 import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
+import com.chwipoClova.common.response.CommonResponse;
+import com.chwipoClova.common.response.MessageCode;
+import com.chwipoClova.feedback.request.FeedbackGenerateReq;
+import com.chwipoClova.feedback.service.FeedbackService;
 import com.chwipoClova.interview.entity.Interview;
 import com.chwipoClova.interview.repository.InterviewRepository;
+import com.chwipoClova.interview.request.InterviewFeedbackGenerateReq;
+import com.chwipoClova.interview.request.InterviewInitQaReq;
 import com.chwipoClova.interview.request.InterviewInsertReq;
 import com.chwipoClova.interview.response.InterviewInsertRes;
 import com.chwipoClova.interview.response.InterviewListRes;
-import com.chwipoClova.interview.response.InterviewNotCompRes;
+import com.chwipoClova.interview.response.InterviewQaListRes;
 import com.chwipoClova.interview.response.InterviewRes;
+import com.chwipoClova.qa.request.QaAnswerInsertReq;
 import com.chwipoClova.qa.request.QaQuestionInsertReq;
 import com.chwipoClova.qa.response.QaCountRes;
 import com.chwipoClova.qa.response.QaListForFeedbackRes;
@@ -22,6 +29,7 @@ import com.chwipoClova.resume.entity.Resume;
 import com.chwipoClova.resume.repository.ResumeRepository;
 import com.chwipoClova.user.entity.User;
 import com.chwipoClova.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +38,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -47,6 +57,8 @@ public class InterviewService {
     private final InterviewRepository interviewRepository;
 
     private final QaService qaService;
+
+    private final FeedbackService feedbackService;
 
     @Value("${limit.size.interview}")
     private Integer interviewLimitSize;
@@ -126,6 +138,8 @@ public class InterviewService {
                 .interviewId(interview.getInterviewId())
                 .userId(user.getUserId())
                 .title(interview.getTitle())
+                .status(interview.getStatus())
+                .feedback(interview.getFeedback())
                 .regDate(interview.getRegDate())
                 .qaData(listForFeedbackResList)
                 .build();
@@ -145,6 +159,7 @@ public class InterviewService {
                     .title(interview.getTitle())
                     .useCnt(qaCountRes.getUseCnt())
                     .totalCnt(qaCountRes.getTotalCnt())
+                    .status(interview.getStatus())
                     .regDate(interview.getRegDate())
                     .build();
             interviewListRes.add(interviewListRes1);
@@ -153,7 +168,7 @@ public class InterviewService {
         return interviewListRes;
     }
 
-    public InterviewNotCompRes selectNotCompInterview(Long userId, Long interviewId) {
+    public InterviewQaListRes selectQaList(Long userId, Long interviewId) {
         userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
         interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
 
@@ -163,7 +178,7 @@ public class InterviewService {
         Long lastQaId = qaCountRes.getLastQaId();
         List<QaListRes> qaListResList = qaService.selectQaList(interviewId);
 
-        return InterviewNotCompRes.builder()
+        return InterviewQaListRes.builder()
                 .interviewId(interviewId)
                 .userId(userId)
                 .totalCnt(totalCnt)
@@ -171,5 +186,98 @@ public class InterviewService {
                 .lastQaId(lastQaId)
                 .qaData(qaListResList)
                 .build();
+    }
+
+    @Transactional
+    public CommonResponse initQa(InterviewInitQaReq interviewInitQaReq) {
+        Long userId = interviewInitQaReq.getUserId();
+        Long interviewId = interviewInitQaReq.getInterviewId();
+        userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
+        Interview interview = interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+
+        Integer status = interview.getStatus();
+
+        // 완료 된 질문은 사용 불가
+        if (status == 1) {
+            throw new CommonException(ExceptionCode.INTERVIEW_COMPLETE.getMessage(), ExceptionCode.INTERVIEW_COMPLETE.getCode());
+        }
+
+        qaService.initQa(interviewId);
+        return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
+    }
+
+    public void downloadInterview(Long userId, Long interviewId, HttpServletResponse response) throws IOException {
+        Interview interview = interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+
+        Integer status = interview.getStatus();
+
+        // 완료 된 질문은 사용 불가
+        if (status == 1) {
+            throw new CommonException(ExceptionCode.INTERVIEW_COMPLETE.getMessage(), ExceptionCode.INTERVIEW_COMPLETE.getCode());
+        }
+
+        InterviewRes interviewRes = selectInterview(userId, interviewId);
+
+        String title = interviewRes.getTitle();
+
+        String name = URLEncoder.encode(title, "UTF-8");
+
+        String filename = name + ".txt";
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String feedback = interviewRes.getFeedback();
+
+        stringBuilder.append(title + "면접 결과");
+
+        stringBuilder.append("\n");
+        stringBuilder.append("\n");
+
+        stringBuilder.append("면접 관의 속마음");
+        stringBuilder.append("\n");
+        stringBuilder.append(feedback);
+
+        stringBuilder.append("\n");
+        stringBuilder.append("\n");
+
+        stringBuilder.append("티키타카의 피드백");
+
+        stringBuilder.append("\n");
+        stringBuilder.append("\n");
+
+        interviewRes.getQaData().stream().forEach(qaListForFeedbackRes -> {
+            stringBuilder.append(qaListForFeedbackRes.getFeedback1());
+            stringBuilder.append("\n");
+
+            stringBuilder.append(qaListForFeedbackRes.getQuestion());
+            stringBuilder.append("\n");
+
+            stringBuilder.append(qaListForFeedbackRes.getFeedback2());
+            stringBuilder.append("\n");
+        });
+
+        String content = stringBuilder.toString();
+
+        byte[] fileByte = content.getBytes();
+
+        response.setContentType("application/octet-stream");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentLength(fileByte.length);
+        response.setHeader("Content-Disposition", "attachment; FileName=\"" + filename +"\";");
+        response.setHeader("Access-Control-Expose-Headers", "X-Filename");
+        response.setHeader("X-Filename", filename);
+        response.setHeader("Content-Transfer-Encoding",  "binary");
+        response.getOutputStream().write(fileByte);
+
+        response.getOutputStream().flush();
+        response.getOutputStream().close();
+    }
+
+    public CommonResponse generateFeedback(FeedbackGenerateReq feedbackGenerateReq) {
+        return feedbackService.generateFeedback(feedbackGenerateReq);
+    }
+
+    public CommonResponse insertAnswer(QaAnswerInsertReq qaAnswerInsertReq) throws IOException {
+       return qaService.insertAnswer(qaAnswerInsertReq);
     }
 }

@@ -25,13 +25,5 @@ public class QaController {
 
     private final QaService qaService;
 
-    @Operation(summary = "답변 저장", description = "답변 저장")
-    @PostMapping("/insertAnswer")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))
-    }
-    )
-    public CommonResponse insertAnswer(@RequestBody QaAnswerInsertReq qaAnswerInsertReq) throws Exception {
-        return qaService.insertAnswer(qaAnswerInsertReq);
-    }
+
 }

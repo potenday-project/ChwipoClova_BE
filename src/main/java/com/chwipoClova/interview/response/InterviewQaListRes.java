@@ -5,12 +5,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
 @Builder
-public class InterviewNotCompRes {
+public class InterviewQaListRes {
     @Schema(description = "면접 ID", example = "1", name = "interviewId")
     private Long interviewId;
 

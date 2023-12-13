@@ -26,15 +26,7 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-    @Operation(summary = "피드백 재생성", description = "피드백 재생성")
-    @PostMapping("/generateFeedback")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))
-    }
-    )
-    public CommonResponse generateFeedback (@RequestBody FeedbackGenerateReq feedbackGenerateReq) throws Exception {
-        return feedbackService.generateFeedback(feedbackGenerateReq);
-    }
+
 
 
 }

@@ -5,9 +5,9 @@ import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
 import com.chwipoClova.feedback.request.FeedbackInsertReq;
-import com.chwipoClova.feedback.response.FeedbackListRes;
 import com.chwipoClova.feedback.service.FeedbackService;
 import com.chwipoClova.interview.entity.Interview;
+import com.chwipoClova.interview.entity.InterviewEditor;
 import com.chwipoClova.interview.repository.InterviewRepository;
 import com.chwipoClova.qa.entity.Qa;
 import com.chwipoClova.qa.entity.QaEditor;
@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -76,12 +77,16 @@ public class QaService {
     public CommonResponse insertAnswer(QaAnswerInsertReq qaAnswerInsertReq) throws IOException {
         Long userId = qaAnswerInsertReq.getUserId();
         Long interviewId = qaAnswerInsertReq.getInterviewId();
-        interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+        Interview interview = interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
 
         List<QaAnswerDataInsertReq> qaAnswerDataInsertReqList = qaAnswerInsertReq.getAnswerData();
 
         List<FeedbackInsertReq> feedbackInsertListReq = new ArrayList<>();
 
+        Qa lastQa = qaRepository.findFirstByInterviewInterviewIdOrderByQaIdDesc(interviewId);
+        Long lastQaId = lastQa.getQaId();
+
+        AtomicBoolean lastCkAtomic = new AtomicBoolean(false);
         qaAnswerDataInsertReqList.stream().forEach(qaAnswerDataInsertReq -> {
             String answer = qaAnswerDataInsertReq.getAnswer();
 
@@ -93,6 +98,10 @@ public class QaService {
                         .build();
                 qa.edit(qaEditor);
 
+                if (lastQaId == qa.getQaId()) {
+                    lastCkAtomic.set(true);
+                }
+
                 // 피드백 정보
                 FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
                 feedbackInsertReq.setQaId(qa.getQaId());
@@ -102,8 +111,17 @@ public class QaService {
             }
         });
 
-        // 피드백 요청 및 등록
-        feedbackService.insertFeedback(feedbackInsertListReq);
+        // 마지막 답변이 있을 경우 면접 완료 처리 및 피드백 생성
+        Boolean lastCk = lastCkAtomic.get();
+        if (lastCk) {
+            // 피드백 요청 및 등록
+            feedbackService.insertFeedback(feedbackInsertListReq);
+
+            // 면접 완료 처리
+            InterviewEditor.InterviewEditorBuilder editorBuilder = interview.toEditor();
+            InterviewEditor interviewEditor = editorBuilder.status(1).build();
+            interview.edit(interviewEditor);
+        }
 
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
@@ -132,7 +150,17 @@ public class QaService {
         List<QaListForFeedbackRes> listForFeedbackResList = new ArrayList<>();
 
         qaListRes.stream().forEach(qaListRes1 -> {
-            List<FeedbackListRes> feedbackListRes = feedbackService.selectFeedbackList(qaListRes1.getQaId());
+            AtomicReference<String> feedback1 = new AtomicReference<>("");
+            AtomicReference<String> feedback2 = new AtomicReference<>("");
+            feedbackService.selectFeedbackList(qaListRes1.getQaId()).stream().forEach(feedbackListRes -> {
+                Integer type = feedbackListRes.getType();
+                if (type == 1) {
+                    feedback1.set(feedbackListRes.getContent());
+                } else if (type == 2) {
+                    feedback2.set(feedbackListRes.getContent());
+                }
+            });
+
             QaListForFeedbackRes qalistForFeedbackRes = QaListForFeedbackRes.builder()
                     .interviewId(qaListRes1.getInterviewId())
                     .qaId(qaListRes1.getQaId())
@@ -140,7 +168,8 @@ public class QaService {
                     .answer(qaListRes1.getAnswer())
                     .regDate(qaListRes1.getRegDate())
                     .modifyDate(qaListRes1.getModifyDate())
-                    .feedbackData(feedbackListRes)
+                    .feedback1(feedback1.get())
+                    .feedback2(feedback2.get())
                     .build();
             listForFeedbackResList.add(qalistForFeedbackRes);
         });
@@ -170,4 +199,8 @@ public class QaService {
                 .build();
     }
 
+    @Transactional
+    public void initQa(Long interviewId) {
+        qaRepository.initQa(interviewId);
+    }
 }

@@ -91,7 +91,12 @@ public class FeedbackService {
         Long userId = feedbackGenerateReq.getUserId();
 
         userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
-        interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+        Interview interview = interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+        Integer status = interview.getStatus();
+
+        if (status != 1) {
+            throw new CommonException(ExceptionCode.INTERVIEW_NOT_COMPLETE.getMessage(), ExceptionCode.INTERVIEW_NOT_COMPLETE.getCode());
+        }
 
         List<Qa> qaList = qaRepository.findByInterviewInterviewIdOrderByQaId(interviewId);
 

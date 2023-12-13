@@ -203,4 +203,11 @@ public class UserService {
                 .modifyDate(user.getModifyDate())
                 .build();
     }
+
+    public CommonResponse logout(HttpServletResponse response, Long userId) {
+        tokenRepository.deleteById(userId);
+        jwtUtil.setHeaderAccessToken(response, "");
+        jwtUtil.setHeaderRefreshToken(response, "");
+        return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
+    }
 }
