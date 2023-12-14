@@ -60,6 +60,7 @@ public class RequestFilter implements Filter {
                             "[REQUEST] {} - {} {} - {}\n" +
                             "Headers : {}\n" +
                             "Request : {}\n" +
+                            "Headers : {}\n" +
                             "Response : {}\n",
                     ((HttpServletRequest) customRequestWrapper).getMethod(),
                     ((HttpServletRequest) customRequestWrapper).getRequestURI(),
@@ -67,6 +68,7 @@ public class RequestFilter implements Filter {
                     (end - start) / 1000.0,
                     getHeaders(customRequestWrapper),
                     buildAccessLog(customRequestWrapper),
+                    getHeaders(responseWrapper),
                     getResponseBody(responseWrapper));
         } else {
             log.info("[REQUEST] {} - {} {} - {}", ((HttpServletRequest) customRequestWrapper).getMethod(), ((HttpServletRequest) customRequestWrapper).getRequestURI(), responseWrapper.getStatus(), (end - start) / 1000.0);
@@ -84,6 +86,15 @@ public class RequestFilter implements Filter {
         }
         return headerMap;
     }
+
+    private Map getHeaders(final HttpServletResponse response) {
+        Map headerMap = new HashMap<>();
+        response.getHeaderNames().stream().forEach(s -> {
+            headerMap.put(s, response.getHeader(s));
+        });
+        return headerMap;
+    }
+
 
     private String getResponseBody(final HttpServletResponse response) throws IOException {
         String payload = null;
