@@ -18,27 +18,20 @@ import org.springframework.web.multipart.support.StandardServletMultipartResolve
 public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
-        String key = JwtUtil.ACCESS_TOKEN;
-        String refreshKey = JwtUtil.REFRESH_TOKEN;
+        String key = JwtUtil.AUTHORIZATION;
 
         return new OpenAPI()
                 .addSecurityItem(new SecurityRequirement()
                         .addList(key)
-                        .addList(refreshKey)
                 )
                 .info(apiInfo())
                 .components(new Components()
                         .addSecuritySchemes(key, new SecurityScheme()
                                 .name(key)
-                                .type(SecurityScheme.Type.APIKEY)
+                                .type(SecurityScheme.Type.HTTP)
                                 .in(SecurityScheme.In.HEADER)
+                                .scheme("bearer")
                                 .bearerFormat("JWT"))
-                        .addSecuritySchemes(refreshKey, new SecurityScheme()
-                                .name(refreshKey)
-                                .type(SecurityScheme.Type.APIKEY)
-                                .bearerFormat("JWT")
-                                .in(SecurityScheme.In.HEADER))
-
                 );
     }
 
