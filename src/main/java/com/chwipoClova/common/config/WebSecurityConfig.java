@@ -25,6 +25,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.Arrays;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(final @NotNull  HttpSecurity http) throws Exception {
         http.httpBasic(HttpBasicConfigurer::disable)
-                .cors(Customizer.withDefaults())
+                .cors(withDefaults())
                 .csrf(CsrfConfigurer::disable)
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
@@ -67,21 +69,5 @@ public class WebSecurityConfig {
                 .exceptionHandling((exception)-> exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
         ;
         return http.build();
-    }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");
-        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Authorization-refresh", "Cache-Control", "Content-Type"));
-
-        /* 응답 헤더 설정 추가*/
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Authorization-refresh"));
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 }
