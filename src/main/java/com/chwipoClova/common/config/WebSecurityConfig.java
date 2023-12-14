@@ -56,8 +56,8 @@ public class WebSecurityConfig {
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                // .requestMatchers("/**").permitAll().anyRequest().authenticated()
-                                .requestMatchers("/user/**", "/interview/**", "/resume/**", "/").permitAll().anyRequest().authenticated()
+                                .requestMatchers("/**").permitAll().anyRequest().authenticated()
+                                //.requestMatchers("/user/**", "/interview/**", "/resume/**", "/").permitAll().anyRequest().authenticated()
 
 
                                 //.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -65,8 +65,8 @@ public class WebSecurityConfig {
 
 
                 )
-                .addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling((exception)-> exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
+                //.addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                //.exceptionHandling((exception)-> exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
         ;
         return http.build();
     }
