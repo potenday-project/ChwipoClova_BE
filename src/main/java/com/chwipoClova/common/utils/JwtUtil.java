@@ -8,20 +8,25 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Component
@@ -32,9 +37,19 @@ public class JwtUtil {
     private final TokenRepository tokenRepository;
 
     private static final long ACCESS_TIME =  30 * 60 * 1000L;
+
     private static final long REFRESH_TIME =  14 * 24 * 60 * 60 * 1000L;
-    public static final String ACCESS_TOKEN = "AccessToken";
-    public static final String REFRESH_TOKEN = "RefreshToken";
+
+    private static final int REFRESH_COOKIE_TIME = 14 * 24 * 60 * 60;
+
+    public static final String ACCESS_TOKEN = "accessToken";
+
+    public static final String REFRESH_TOKEN = "refreshToken";
+
+    public static final String AUTHORIZATION = "Authorization";
+
+    public static final String BEARER = "Bearer ";
+
 
     @Value("${jwt.secretKey}")
     private String secretKey;
@@ -51,7 +66,15 @@ public class JwtUtil {
 
     // header 토큰을 가져오는 기능
     public String getHeaderToken(HttpServletRequest request, String type) {
-        return type.equals("Access") ? request.getHeader(ACCESS_TOKEN) :request.getHeader(REFRESH_TOKEN);
+
+        String tokenName = type.equals("Access") ? ACCESS_TOKEN : REFRESH_TOKEN;
+        String authorization = request.getHeader(AUTHORIZATION);
+
+        if (authorization != null && authorization.startsWith(BEARER)) {
+            return authorization.substring(7);
+        } else {
+            return null;
+        }
     }
 
     // 토큰 생성
@@ -114,11 +137,73 @@ public class JwtUtil {
 
     // 어세스 토큰 헤더 설정
     public void setHeaderAccessToken(HttpServletResponse response, String accessToken) {
-        response.setHeader("Access_Token", accessToken);
+        response.setHeader(ACCESS_TOKEN, accessToken);
     }
 
     // 리프레시 토큰 헤더 설정
     public void setHeaderRefreshToken(HttpServletResponse response, String refreshToken) {
-        response.setHeader("Refresh_Token", refreshToken);
+        response.setHeader(REFRESH_TOKEN, refreshToken);
     }
+
+    public void setCookieRefreshToken(HttpServletResponse response, String refreshToken) {
+        /*ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, refreshToken)
+                .maxAge(REFRESH_COOKIE_TIME)
+                .path("/")
+                //.secure(true)
+                .domain("localhost")
+                .sameSite("None")
+                .httpOnly(false)
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());*/
+        Cookie cookie = new Cookie(REFRESH_TOKEN, refreshToken);
+        cookie.setMaxAge(REFRESH_COOKIE_TIME);
+        cookie.setHttpOnly(true);
+        //cookie.setSecure(true);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+    }
+
+    public void setDelCookieRefreshToken(HttpServletResponse response) {
+/*        ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, null)
+                .maxAge(0)
+                .path("/")
+                .domain("localhost")
+                //.secure(true)
+                .sameSite("None")
+                .httpOnly(false)
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());*/
+
+        Cookie cookie = new Cookie(REFRESH_TOKEN, null);
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        //cookie.setSecure(true);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+
+    }
+
+    public String getCookieToken(HttpServletRequest request, String type) {
+        Cookie[] cookies = request.getCookies();
+
+        String cookieName = type.equals("Access") ? ACCESS_TOKEN : REFRESH_TOKEN;
+
+        AtomicReference<String> cookieToken = new AtomicReference<>();
+        if (cookies != null) {
+            Arrays.stream(cookies)
+                    .filter(cookie -> cookie.getName().equals(cookieName))
+                    .findFirst()
+                    .ifPresent(cookie -> {
+                        cookieToken.set(cookie.getValue());
+                    });
+        }
+        return cookieToken.get();
+    }
+
+    public void setResonseJwtToken(HttpServletResponse response, String accessToken, String refreshToken) {
+        setHeaderAccessToken(response, accessToken);
+        setCookieRefreshToken(response, refreshToken);
+    }
+
 }

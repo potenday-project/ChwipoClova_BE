@@ -31,16 +31,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // WebSecurityConfig 에서 보았던 UsernamePasswordAuthenticationFilter 보다 먼저 동작을 하게 됩니다.
 
-        // Access / Refresh 헤더에서 토큰을 가져옴.
+        // Access / Refresh 헤더와 쿠키에서 토큰을 가져옴.
         String accessToken = jwtUtil.getHeaderToken(request, "Access");
-        String refreshToken = jwtUtil.getHeaderToken(request, "Refresh");
+        String refreshToken = jwtUtil.getCookieToken(request, "Refresh");
 
         if(accessToken != null) {
             // 어세스 토큰값이 유효하다면 setAuthentication를 통해
             // security context에 인증 정보저장
             if(jwtUtil.tokenValidation(accessToken)){
                 jwtUtil.setHeaderAccessToken(response, accessToken);
-                jwtUtil.setHeaderRefreshToken(response, refreshToken);
+                //jwtUtil.setResonseJwtToken(response, accessToken, refreshToken);
                 setAuthentication(jwtUtil.getIdFromToken(accessToken));
             }
             // 어세스 토큰이 만료된 상황 && 리프레시 토큰 또한 존재하는 상황
@@ -53,9 +53,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     String loginId = jwtUtil.getIdFromToken(refreshToken);
                     // 새로운 어세스 토큰 발급
                     String newAccessToken = jwtUtil.createToken(loginId, "Access");
+
                     // 헤더에 어세스 토큰 추가
+                    // 리프레시 토큰은 쿠키로 생성
                     jwtUtil.setHeaderAccessToken(response, newAccessToken);
-                    jwtUtil.setHeaderRefreshToken(response, refreshToken);
+                    //jwtUtil.setResonseJwtToken(response, newAccessToken, refreshToken);
+
                     // Security context에 인증 정보 넣기
                     setAuthentication(jwtUtil.getIdFromToken(newAccessToken));
                 }
@@ -96,4 +99,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             log.error(e.getMessage());
         }
     }
+
 }

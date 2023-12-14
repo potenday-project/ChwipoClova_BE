@@ -113,7 +113,7 @@ public class UserService {
             }
 
             // response 헤더에 Access Token / Refresh Token 넣음
-            setHeader(response, tokenDto);
+            jwtUtil.setResonseJwtToken(response, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
 
             UserLoginRes userLoginRes = UserLoginRes.builder()
                     .snsId(userInfoRst.getSnsId())
@@ -207,7 +207,26 @@ public class UserService {
     public CommonResponse logout(HttpServletResponse response, Long userId) {
         tokenRepository.deleteById(userId);
         jwtUtil.setHeaderAccessToken(response, "");
-        jwtUtil.setHeaderRefreshToken(response, "");
+        jwtUtil.setDelCookieRefreshToken(response);
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
+    }
+
+    public UserInfoRes selectUserInfoForUserId(Long userId) {
+        Optional<User> usersInfo = userRepository.findById(userId);
+        if (!usersInfo.isPresent()) {
+            throw new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode());
+        }
+
+        User user = usersInfo.get();
+
+        return UserInfoRes.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .thumbnailImage(user.getThumbnailImage())
+                .profileImage(user.getProfileImage())
+                .regDate(user.getRegDate())
+                .modifyDate(user.getModifyDate())
+                .build();
     }
 }
