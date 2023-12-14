@@ -24,6 +24,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 @Tag(name = "Resume", description = "이력서 API")
 @RequestMapping("resume")
 public class ResumeController {
