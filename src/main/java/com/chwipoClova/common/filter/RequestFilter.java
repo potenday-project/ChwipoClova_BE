@@ -60,7 +60,7 @@ public class RequestFilter implements Filter {
                             "[REQUEST] {} - {} {} - {}\n" +
                             "Headers : {}\n" +
                             "Request : {}\n" +
-                            "Headers : {}\n" +
+                            //"Headers : {}\n" +
                             "Response : {}\n",
                     ((HttpServletRequest) customRequestWrapper).getMethod(),
                     ((HttpServletRequest) customRequestWrapper).getRequestURI(),
@@ -68,7 +68,7 @@ public class RequestFilter implements Filter {
                     (end - start) / 1000.0,
                     getHeaders(customRequestWrapper),
                     buildAccessLog(customRequestWrapper),
-                    getHeaders(responseWrapper),
+                    //getHeaders(responseWrapper),
                     getResponseBody(responseWrapper));
         } else {
             log.info("[REQUEST] {} - {} {} - {}", ((HttpServletRequest) customRequestWrapper).getMethod(), ((HttpServletRequest) customRequestWrapper).getRequestURI(), responseWrapper.getStatus(), (end - start) / 1000.0);
