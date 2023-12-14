@@ -31,7 +31,6 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
 @Tag(name = "Interview", description = "면접 API")
 @RequestMapping("interview")
 public class InterviewController {
