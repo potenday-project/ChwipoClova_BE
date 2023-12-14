@@ -7,6 +7,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @OpenAPIDefinition(servers = {@Server(url = "/", description = "Default Server URL")})
 @EnableScheduling
@@ -21,4 +23,5 @@ public class ChwipoClovaApplication {
 	public MultipartConfigElement multipartConfigElement() {
 		return new MultipartConfigElement("");
 	}
+
 }
