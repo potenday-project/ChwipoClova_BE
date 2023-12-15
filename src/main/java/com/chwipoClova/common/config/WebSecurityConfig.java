@@ -42,9 +42,9 @@ public class WebSecurityConfig {
     @Bean
     public WebSecurityCustomizer ignoringCustomizer() {
         return (web) -> web.ignoring().requestMatchers("/h2-console/**", "/swagger-ui/**", "/swagger-client/**", "/api-docs/**", "/css/**", "/js/**", "/json/**", "/image/**",
+                "/favicon",
                 "/v3/api-docs/**",
-                "/swagger-ui.html",
-                "/user/login"
+                "/swagger-ui.html"
         );
     }
 
@@ -56,8 +56,10 @@ public class WebSecurityConfig {
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/**").permitAll().anyRequest().authenticated()
-                                //.requestMatchers("/user/**", "/interview/**", "/resume/**", "/").permitAll().anyRequest().authenticated()
+                                //.requestMatchers("/**").permitAll().anyRequest().authenticated()
+                                .requestMatchers("/interview/**", "/resume/**", "/"
+                                ,"/user/getKakaoUrl","/user/kakaoLogin","/user/kakaoCallback","/user/logout"
+                                ).permitAll().anyRequest().authenticated()
 
 
                                 //.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -65,8 +67,8 @@ public class WebSecurityConfig {
 
 
                 )
-                //.addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                //.exceptionHandling((exception)-> exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
+                .addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling((exception)-> exception.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
         ;
         return http.build();
     }

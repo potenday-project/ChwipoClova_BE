@@ -24,6 +24,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
+    private String TOKEN_PREFIX = "Bearer ";
+
     @Override
     // HTTP 요청이 오면 WAS(tomcat)가 HttpServletRequest, HttpServletResponse 객체를 만들어 줍니다.
     // 만든 인자 값을 받아옵니다.

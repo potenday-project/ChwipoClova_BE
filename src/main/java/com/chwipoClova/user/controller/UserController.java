@@ -1,8 +1,10 @@
 package com.chwipoClova.user.controller;
 
+import com.chwipoClova.common.dto.UserDetailsImpl;
 import com.chwipoClova.common.response.CommonMsgResponse;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
+import com.chwipoClova.user.entity.User;
 import com.chwipoClova.user.response.UserInfoRes;
 import com.chwipoClova.user.response.UserLoginRes;
 import com.chwipoClova.user.response.UserSnsUrlRes;
@@ -19,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -30,16 +33,16 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "유저 정보 조회 (테스트용)", description = "유저 정보 조회 (테스트용)")
+    @Operation(summary = "유저 정보 조회", description = "유저 정보 조회")
     @GetMapping("/getUserInfo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK")
     }
     )
-    public UserInfoRes getUserInfo(
-            @Schema(description = "이메일", example = "test@naver.com", name = "email") @RequestParam(name = "email") String email
-    ) {
-        return userService.selectUserInfo(email);
+    public UserInfoRes getUserInfo(Authentication authentication) {
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl)authentication.getPrincipal();
+        Long userId = userDetailsImpl.getUser().getUserId();
+        return userService.selectUserInfoForUserId(userId);
     }
 
     @Operation(summary = "카카오 로그인 URL", description = "카카오 로그인 URL")
