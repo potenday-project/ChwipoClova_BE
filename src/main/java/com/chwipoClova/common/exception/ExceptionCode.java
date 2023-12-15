@@ -47,6 +47,8 @@ public enum ExceptionCode {
 
     QA_NULL("890", "질문 정보가 올바르지 않습니다."),
 
+    FEEDBACK_NOT_NULL("891", "피드백 데이터가 있습니다."),
+
     TOKEN_NULL("950", "토큰정보가 올바르지 않습니다."),
 
     API_NULL("980", "API 결과 NULL"),

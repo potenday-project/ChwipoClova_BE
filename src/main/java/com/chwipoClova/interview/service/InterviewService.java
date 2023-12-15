@@ -16,6 +16,7 @@ import com.chwipoClova.interview.response.InterviewListRes;
 import com.chwipoClova.interview.response.InterviewQaListRes;
 import com.chwipoClova.interview.response.InterviewRes;
 import com.chwipoClova.qa.request.QaAnswerInsertReq;
+import com.chwipoClova.qa.request.QaGenerateReq;
 import com.chwipoClova.qa.request.QaQuestionInsertReq;
 import com.chwipoClova.qa.response.QaCountRes;
 import com.chwipoClova.qa.response.QaListForFeedbackRes;
@@ -87,13 +88,6 @@ public class InterviewService {
         String recruitSummary = recruitInsertRes.getSummary();
         String resumeSummary = resume.getSummary();
 
-        // TODO 이력서 요약과 채용공고 요약을 이용해서 질문, AI 답변 생성
-        String q1 = "질문1입니다.";
-        String qAi1 = "질문1 AI 답변입니다.";
-
-        String q2 = "질문2입니다.";
-        String qAi2 = "질문2 AI 답변입니다.";
-
         // 면접 저장
         Interview interview = Interview.builder()
                 .title(title)
@@ -103,20 +97,8 @@ public class InterviewService {
                 .build();
         Interview interviewRst = interviewRepository.save(interview);
 
-        // 질문 답변 저장
-        List<QaQuestionInsertReq> qaQuestionInsertReqList = new ArrayList<>();
-        QaQuestionInsertReq qaQuestionInsertReq1 = new QaQuestionInsertReq();
-        qaQuestionInsertReq1.setInterview(interview);
-        qaQuestionInsertReq1.setQuestion(q1);
-        qaQuestionInsertReq1.setAiAnswer(qAi1);
-        qaQuestionInsertReqList.add(qaQuestionInsertReq1);
-
-        QaQuestionInsertReq qaQuestionInsertReq2 = new QaQuestionInsertReq();
-        qaQuestionInsertReq2.setInterview(interview);
-        qaQuestionInsertReq2.setQuestion(q2);
-        qaQuestionInsertReq2.setAiAnswer(qAi2);
-        qaQuestionInsertReqList.add(qaQuestionInsertReq2);
-        List<QaQuestionInsertRes> questionData = qaService.insertQaQuestionList(qaQuestionInsertReqList);
+        // TODO 이력서 요약과 채용공고 요약을 이용해서 질문, AI 답변 생성
+        List<QaQuestionInsertRes> questionData = qaService.insertQa(interviewRst);
 
         return InterviewInsertRes.builder()
                 .interviewId(interviewRst.getInterviewId())
@@ -298,6 +280,11 @@ public class InterviewService {
 
         // 면접 삭제
         interviewRepository.delete(interview);
+        return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
+    }
+
+    public CommonResponse generateQa(QaGenerateReq qaGenerateReq) throws IOException {
+        qaService.generateQa(qaGenerateReq);
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
 }
