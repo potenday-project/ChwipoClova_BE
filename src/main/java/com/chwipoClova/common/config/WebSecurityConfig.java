@@ -57,14 +57,10 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 //.requestMatchers("/**").permitAll().anyRequest().authenticated()
-                                .requestMatchers("/interview/**", "/resume/**", "/"
+                                .requestMatchers("/"
                                 ,"/user/getKakaoUrl","/user/kakaoLogin","/user/kakaoCallback","/user/logout"
                                 ).permitAll().anyRequest().authenticated()
-
-
                                 //.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-
 
                 )
                 .addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)

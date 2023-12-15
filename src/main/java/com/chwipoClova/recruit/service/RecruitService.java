@@ -89,12 +89,10 @@ public class RecruitService {
             apiUtils.countTokenLimitCk(recruitContent, apiBaseTokenLimit);
 
             // 채용공고 요약 실행
-            //String summary = apiUtils.summaryRecruit(recruitContent);
+            String summary = apiUtils.summaryRecruit(recruitContent);
 
-            String summary = recruitContent + "요약";
-
-            // TODO 채용 공고 제목 추출
-            String title = recruitContent + "제목";
+            // 채용공고에서 제목 추출
+            String title = getRecruitTitle(summary);
 
             recruit = Recruit.builder()
                     .title(title)
@@ -143,10 +141,10 @@ public class RecruitService {
             apiUtils.countTokenLimitCk(resumeTxt, apiBaseTokenLimit);
 
             // 채용공고 요약
-            //String summary = apiUtils.summaryRecruit(resumeTxt);
-            String summary = recruitContent + "요약";
-            // TODO 채용 공고 제목 추출
-            String title = originalName + "제목";
+            String summary = apiUtils.summaryRecruit(recruitContent);
+
+            // 채용공고에서 제목 추출
+            String title = getRecruitTitle(summary);
 
             recruit = Recruit.builder()
                     .title(title)
@@ -169,6 +167,34 @@ public class RecruitService {
 
         return recruitInsertRes;
     }
+
+    private String getRecruitTitle(String summary) {
+        String title = null;
+        // 현재 사용하지 않는 --- 제거 및 줄바꿈 분리
+        if (summary.indexOf("---") != -1) {
+            String[] splitSummaryList = summary.substring(0, summary.lastIndexOf("---")).split("\n");
+
+            // 기업명 고정
+            String targetWord = "기업 :";
+            for (String splitSummary : splitSummaryList) {
+                if (splitSummary.indexOf(".") != -1) {
+                    String num = splitSummary.substring(0, splitSummary.indexOf("."));
+                    if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
+                        int index = splitSummary.indexOf(targetWord);
+                        if (index != -1) {
+                            title = splitSummary.substring(index + targetWord.length()).trim();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (org.apache.commons.lang3.StringUtils.isBlank(title)) {
+            throw new CommonException(ExceptionCode.RECRUIT_TITLE_NULL.getMessage(), ExceptionCode.RECRUIT_TITLE_NULL.getCode());
+        }
+        return title;
+    }
+
     private String makeFolder() {
 
         String str = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));

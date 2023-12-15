@@ -20,6 +20,8 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -117,6 +119,15 @@ public class ResumeService {
         String saveName = filePath + fileName;
         Path savePath = Paths.get(saveName);
         file.transferTo(savePath);
+
+        File pdfFile = new File(saveName);
+        PDDocument document = Loader.loadPDF(pdfFile);
+        int pageCount = document.getNumberOfPages();
+
+        if (pageCount > 5) {
+            pdfFile.delete();
+            throw new CommonException(ExceptionCode.FILE_PDF_PAGE_OVER.getMessage(), ExceptionCode.FILE_PDF_PAGE_OVER.getCode());
+        }
 
         // 이력서 OCR
         String resumeTxt = apiUtils.ocr(file);

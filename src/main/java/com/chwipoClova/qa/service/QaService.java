@@ -4,6 +4,7 @@ import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
+import com.chwipoClova.common.utils.ApiUtils;
 import com.chwipoClova.feedback.request.FeedbackInsertReq;
 import com.chwipoClova.feedback.service.FeedbackService;
 import com.chwipoClova.interview.entity.Interview;
@@ -49,6 +50,8 @@ public class QaService {
     private final FeedbackService feedbackService;
 
     private final UserRepository userRepository;
+
+    private final ApiUtils apiUtils;
 
     @Transactional
     public List<QaQuestionInsertRes> insertQaQuestionList(List<QaQuestionInsertReq> qaQuestionInsertReqList) throws IOException {
@@ -120,6 +123,14 @@ public class QaService {
         // 마지막 답변이 있을 경우 면접 완료 처리 및 피드백 생성
         Boolean lastCk = lastCkAtomic.get();
         if (lastCk) {
+            // 면접관의 속마음
+            //apiUtils.feel();
+
+            // 키워드
+
+
+            // 모범답안
+
             // 피드백 요청 및 등록
             feedbackService.insertFeedback(feedbackInsertListReq);
 
@@ -244,22 +255,39 @@ public class QaService {
     }
 
     public List<QaQuestionInsertRes> insertQa(Interview interviewRst) throws IOException {
-        String time = LocalDateTime.now().format(DateTimeFormatter.ISO_TIME);
-        String q1 = "질문1입니다." + time;
+        String recruitSummary = interviewRst.getRecruitSummary();
+        String resumeSummary = interviewRst.getResumeSummary();
 
-        String q2 = "질문2입니다." + time;
+        String apiQaRst = apiUtils.question(recruitSummary, resumeSummary);
 
-        // 질문 답변 저장
         List<QaQuestionInsertReq> qaQuestionInsertReqList = new ArrayList<>();
-        QaQuestionInsertReq qaQuestionInsertReq1 = new QaQuestionInsertReq();
-        qaQuestionInsertReq1.setInterview(interviewRst);
-        qaQuestionInsertReq1.setQuestion(q1);
-        qaQuestionInsertReqList.add(qaQuestionInsertReq1);
-
-        QaQuestionInsertReq qaQuestionInsertReq2 = new QaQuestionInsertReq();
-        qaQuestionInsertReq2.setInterview(interviewRst);
-        qaQuestionInsertReq2.setQuestion(q2);
-        qaQuestionInsertReqList.add(qaQuestionInsertReq2);
+        getApiQaList(apiQaRst).stream().forEach(apiQa ->  {
+            QaQuestionInsertReq qaQuestionInsertReq = new QaQuestionInsertReq();
+            qaQuestionInsertReq.setInterview(interviewRst);
+            qaQuestionInsertReq.setQuestion(apiQa);
+            qaQuestionInsertReqList.add(qaQuestionInsertReq);
+        });
         return insertQaQuestionList(qaQuestionInsertReqList);
+    }
+
+    private List<String> getApiQaList(String apiQaRst) {
+        // 현재 사용하지 않는 --- 제거 및 줄바꿈 분리
+        String[] splitSummaryList = apiQaRst.split("\n");
+
+        List<String> apiQaList = new ArrayList<>();
+        for (String splitSummary : splitSummaryList) {
+            if (splitSummary.indexOf(".") != -1) {
+                String num = splitSummary.substring(0, splitSummary.indexOf("."));
+                if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
+                    apiQaList.add(splitSummary.trim());
+                }
+            }
+        }
+
+        if (apiQaList.size() == 0) {
+            throw new CommonException(ExceptionCode.API_QA_NULL.getMessage(), ExceptionCode.API_QA_NULL.getCode());
+        }
+
+        return apiQaList;
     }
 }
