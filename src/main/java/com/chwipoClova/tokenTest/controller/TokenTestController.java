@@ -2,6 +2,7 @@ package com.chwipoClova.tokenTest.controller;
 
 import com.chwipoClova.user.response.UserInfoRes;
 import com.chwipoClova.user.service.UserService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,6 +25,7 @@ public class TokenTestController {
 
 
     @Operation(summary = "토큰 테스트 용", description = "유저 정보 조회 (테스트용)")
+    @Hidden
     @GetMapping("/getUserInfo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK")
