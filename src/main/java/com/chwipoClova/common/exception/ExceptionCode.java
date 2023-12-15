@@ -33,6 +33,8 @@ public enum ExceptionCode {
 
     RESUME_LIST_OVER("861", "이력서 최대 개수를 초과하였습니다."),
 
+    RESUME_TOKEN_OVER("862", "이력서의 글자 수를 5,000자 이하로 줄여주세요"),
+
     RECRUIT_CONTENT_NULL("870", "채용공고 정보가 올바르지 않습니다."),
 
     INTERVIEW_NULL("880", "면접 정보가 올바르지 않습니다."),
@@ -45,7 +47,19 @@ public enum ExceptionCode {
 
     QA_NULL("890", "질문 정보가 올바르지 않습니다."),
 
-    TOKEN_NULL("950", "토큰정보가 올바르지 않습니다.")
+    TOKEN_NULL("950", "토큰정보가 올바르지 않습니다."),
+
+    API_NULL("980", "API 결과 NULL"),
+
+    API_JSON_MAPPING_FAIL("981", "API JSON 매핑에 실패했습니다."),
+
+    API_NOT_OK("982", "API 성공 응답이 아닙니다."),
+
+    API_RESUME_FAIL("983", "이력서 API 호출 실패"),
+
+    API_RESUME_SUMMARY_NULL("984", "이력서 요약 결과가 비어있습니다."),
+
+    API_TOKEN_COUNT_FAIL("985", "토큰 계산기 호출 실패")
 
     ;
 
