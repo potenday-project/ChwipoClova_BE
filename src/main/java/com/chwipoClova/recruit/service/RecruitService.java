@@ -3,22 +3,29 @@ package com.chwipoClova.recruit.service;
 
 import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
+import com.chwipoClova.common.utils.ApiUtils;
 import com.chwipoClova.recruit.entity.Recruit;
 import com.chwipoClova.recruit.repository.RecruitRepository;
 import com.chwipoClova.recruit.request.RecruitInsertReq;
 import com.chwipoClova.recruit.response.RecruitInsertRes;
+import com.chwipoClova.resume.response.ApiRes;
 import com.chwipoClova.user.entity.User;
 import com.chwipoClova.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -46,6 +53,23 @@ public class RecruitService {
 
     private final RecruitRepository recruitRepository;
 
+    private final ApiUtils apiUtils;
+
+    @Value("${api.url.base}")
+    private String apiBaseUrl;
+
+    @Value("${api.url.ocr}")
+    private String ocr;
+
+    @Value("${api.url.count}")
+    private String count;
+
+    @Value("${api.url.recruit}")
+    private String recruit;
+
+    @Value("${api.token_limit.base}")
+    private int apiBaseTokenLimit;
+
     @Transactional
     public RecruitInsertRes insertRecruit(RecruitInsertReq recruitInsertReq) throws IOException {
         Long userId = recruitInsertReq.getUserId();
@@ -61,7 +85,12 @@ public class RecruitService {
         Recruit recruit;
 
         if (org.apache.commons.lang3.StringUtils.isNotBlank(recruitContent)) {
-            // TODO 채용 공고 텍스트 요약
+            // 토큰 수 계산
+            apiUtils.countTokenLimitCk(recruitContent, apiBaseTokenLimit);
+
+            // 채용공고 요약 실행
+            //String summary = apiUtils.summaryRecruit(recruitContent);
+
             String summary = recruitContent + "요약";
 
             // TODO 채용 공고 제목 추출
@@ -107,9 +136,15 @@ public class RecruitService {
             Path savePath = Paths.get(saveName);
             file.transferTo(savePath);
 
-            // TODO 채용 공고 이미지 요약
-            String summary = originalName + "요약";
+            // 채용공고 OCR
+            String resumeTxt = apiUtils.ocr(file);
 
+            // 채용공고 OCR 성공 이후 토큰 계산 하여 3000자 이하인자 체크
+            apiUtils.countTokenLimitCk(resumeTxt, apiBaseTokenLimit);
+
+            // 채용공고 요약
+            //String summary = apiUtils.summaryRecruit(resumeTxt);
+            String summary = recruitContent + "요약";
             // TODO 채용 공고 제목 추출
             String title = originalName + "제목";
 
@@ -163,4 +198,5 @@ public class RecruitService {
             }
         }
     }
+
 }

@@ -4,24 +4,40 @@ import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
+import com.chwipoClova.common.utils.ApiUtils;
 import com.chwipoClova.resume.entity.Resume;
 import com.chwipoClova.resume.repository.ResumeRepository;
 import com.chwipoClova.resume.request.ResumeDeleteOldReq;
 import com.chwipoClova.resume.request.ResumeDeleteReq;
 import com.chwipoClova.resume.response.ResumeListRes;
 import com.chwipoClova.resume.response.ResumeUploadRes;
+import com.chwipoClova.resume.response.ApiRes;
 import com.chwipoClova.user.entity.User;
 import com.chwipoClova.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -29,6 +45,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +69,11 @@ public class ResumeService {
     private final ResumeRepository resumeRepository;
 
     private final UserRepository userRepository;
+
+    private final ApiUtils apiUtils;
+
+    @Value("${api.token_limit.base}")
+    private int apiBaseTokenLimit;
 
     @Transactional
     public ResumeUploadRes uploadResume(Long userId, MultipartFile file) throws IOException {
@@ -96,11 +118,15 @@ public class ResumeService {
         Path savePath = Paths.get(saveName);
         file.transferTo(savePath);
 
-        // TODO 업로드 성공 후 요약 저장
-        String summary = originalName + "요약";
+        // 이력서 OCR
+        String resumeTxt = apiUtils.ocr(file);
 
-        // TODO 등록 전 개수 제한 필요
-        
+        // 이력서 OCR 성공 이후 토큰 계산 하여 3000자 이하인자 체크
+        apiUtils.countTokenLimitCk(resumeTxt, apiBaseTokenLimit);
+
+        // 이력서 요약
+        String summary = apiUtils.summaryResume(resumeTxt);
+
         // 파일업로드 성공 후 DB 저장
         Resume resume = Resume.builder()
                 .fileName(fileName)
@@ -193,4 +219,6 @@ public class ResumeService {
         resumeRepository.delete(resume);
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
+
+
 }

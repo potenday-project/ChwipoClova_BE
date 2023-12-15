@@ -4,20 +4,17 @@ import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
-import com.chwipoClova.common.utils.ApiUtils;
 import com.chwipoClova.feedback.request.FeedbackGenerateReq;
 import com.chwipoClova.feedback.service.FeedbackService;
 import com.chwipoClova.interview.entity.Interview;
 import com.chwipoClova.interview.repository.InterviewRepository;
 import com.chwipoClova.interview.request.InterviewDeleteReq;
-import com.chwipoClova.interview.request.InterviewFeedbackGenerateReq;
 import com.chwipoClova.interview.request.InterviewInitQaReq;
 import com.chwipoClova.interview.request.InterviewInsertReq;
 import com.chwipoClova.interview.response.InterviewInsertRes;
 import com.chwipoClova.interview.response.InterviewListRes;
 import com.chwipoClova.interview.response.InterviewQaListRes;
 import com.chwipoClova.interview.response.InterviewRes;
-import com.chwipoClova.qa.entity.Qa;
 import com.chwipoClova.qa.request.QaAnswerInsertReq;
 import com.chwipoClova.qa.request.QaQuestionInsertReq;
 import com.chwipoClova.qa.response.QaCountRes;
@@ -44,7 +41,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
