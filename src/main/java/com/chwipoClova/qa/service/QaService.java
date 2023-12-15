@@ -168,8 +168,8 @@ public class QaService {
                     .answer(qaListRes1.getAnswer())
                     .regDate(qaListRes1.getRegDate())
                     .modifyDate(qaListRes1.getModifyDate())
-                    .feedback1(feedback1.get())
-                    .feedback2(feedback2.get())
+                    .keyword(feedback1.get())
+                    .bestAnswer(feedback2.get())
                     .build();
             listForFeedbackResList.add(qalistForFeedbackRes);
         });
