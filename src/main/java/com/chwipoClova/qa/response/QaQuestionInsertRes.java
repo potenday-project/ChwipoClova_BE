@@ -19,9 +19,6 @@ public class QaQuestionInsertRes {
     @Schema(description = "질문", example = "질문1", name = "question")
     private String question;
 
-    @Schema(description = "AI 답변", example = "AI답변1", name = "aiAnswer")
-    private String aiAnswer;
-
     @Schema(description = "등록일", example = "2023-12-09T10:13:17.838+00:00", name = "regDate")
     private Date regDate;
 

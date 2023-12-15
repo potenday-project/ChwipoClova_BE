@@ -9,6 +9,7 @@ import com.chwipoClova.interview.response.InterviewQaListRes;
 import com.chwipoClova.interview.response.InterviewRes;
 import com.chwipoClova.interview.service.InterviewService;
 import com.chwipoClova.qa.request.QaAnswerInsertReq;
+import com.chwipoClova.qa.request.QaGenerateReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -70,7 +71,7 @@ public class InterviewController {
         return interviewService.selectInterviewList(userId);
     }
 
-    @Operation(summary = "면접 질문 조회", description = "면접 질문 조회")
+    @Operation(summary = "질문 조회", description = "질문 조회")
     @GetMapping(path = "/getQaList")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK")
@@ -114,6 +115,15 @@ public class InterviewController {
         interviewService.downloadInterview(userId, interviewId, response);
     }
 
+    @Operation(summary = "질문 재생성", description = "질문 재생성")
+    @PostMapping("/generateQa")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))
+    }
+    )
+    public CommonResponse generateQa (@RequestBody QaGenerateReq qaGenerateReq) throws Exception {
+        return interviewService.generateQa(qaGenerateReq);
+    }
 
     @Operation(summary = "피드백 재생성", description = "피드백 재생성")
     @PostMapping("/generateFeedback")

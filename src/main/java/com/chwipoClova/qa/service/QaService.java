@@ -14,11 +14,13 @@ import com.chwipoClova.qa.entity.QaEditor;
 import com.chwipoClova.qa.repository.QaRepository;
 import com.chwipoClova.qa.request.QaAnswerDataInsertReq;
 import com.chwipoClova.qa.request.QaAnswerInsertReq;
+import com.chwipoClova.qa.request.QaGenerateReq;
 import com.chwipoClova.qa.request.QaQuestionInsertReq;
 import com.chwipoClova.qa.response.QaCountRes;
 import com.chwipoClova.qa.response.QaListForFeedbackRes;
 import com.chwipoClova.qa.response.QaListRes;
 import com.chwipoClova.qa.response.QaQuestionInsertRes;
+import com.chwipoClova.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +47,8 @@ public class QaService {
     private final InterviewRepository interviewRepository;
 
     private final FeedbackService feedbackService;
+
+    private final UserRepository userRepository;
 
     @Transactional
     public List<QaQuestionInsertRes> insertQaQuestionList(List<QaQuestionInsertReq> qaQuestionInsertReqList) throws IOException {
@@ -62,7 +69,6 @@ public class QaService {
             QaQuestionInsertRes qaQuestionInsertRes = QaQuestionInsertRes.builder()
                     .qaId(qa.getQaId())
                     .question(qa.getQuestion())
-                    .aiAnswer(qa.getAiAnswer())
                     .interviewId(qa.getInterview().getInterviewId())
                     .regDate(qa.getRegDate())
                     .modifyDate(qa.getModifyDate())
@@ -206,5 +212,54 @@ public class QaService {
 
     public void deleteQa(Long interviewId) {
         qaRepository.deleteByInterviewInterviewId(interviewId);
+    }
+
+    public void generateQa(QaGenerateReq qaGenerateReq) throws IOException {
+        Long interviewId = qaGenerateReq.getInterviewId();
+        Long userId = qaGenerateReq.getUserId();
+
+        userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
+        Interview interview = interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
+        Integer status = interview.getStatus();
+
+        if (status != 0) {
+            throw new CommonException(ExceptionCode.INTERVIEW_COMPLETE.getMessage(), ExceptionCode.INTERVIEW_COMPLETE.getCode());
+        }
+
+        List<Qa> qaList = qaRepository.findByInterviewInterviewIdOrderByQaId(interviewId);
+
+        // 피드백 데이터가 있는지 확인 있으면 오류 발생
+        qaList.stream().forEach(qa -> {
+            int feedbackSize = feedbackService.selectFeedbackList(qa.getQaId()).size();
+            if (feedbackSize > 0) {
+                throw new CommonException(ExceptionCode.FEEDBACK_NOT_NULL.getMessage(), ExceptionCode.FEEDBACK_NOT_NULL.getCode());
+            }
+        });
+
+        // 기존 질문 전부 삭제
+        qaRepository.deleteAll(qaList);
+
+        // 새로운 질문 생성
+        insertQa(interview);
+    }
+
+    public List<QaQuestionInsertRes> insertQa(Interview interviewRst) throws IOException {
+        String time = LocalDateTime.now().format(DateTimeFormatter.ISO_TIME);
+        String q1 = "질문1입니다." + time;
+
+        String q2 = "질문2입니다." + time;
+
+        // 질문 답변 저장
+        List<QaQuestionInsertReq> qaQuestionInsertReqList = new ArrayList<>();
+        QaQuestionInsertReq qaQuestionInsertReq1 = new QaQuestionInsertReq();
+        qaQuestionInsertReq1.setInterview(interviewRst);
+        qaQuestionInsertReq1.setQuestion(q1);
+        qaQuestionInsertReqList.add(qaQuestionInsertReq1);
+
+        QaQuestionInsertReq qaQuestionInsertReq2 = new QaQuestionInsertReq();
+        qaQuestionInsertReq2.setInterview(interviewRst);
+        qaQuestionInsertReq2.setQuestion(q2);
+        qaQuestionInsertReqList.add(qaQuestionInsertReq2);
+        return insertQaQuestionList(qaQuestionInsertReqList);
     }
 }
