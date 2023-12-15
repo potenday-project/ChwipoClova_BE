@@ -2,10 +2,7 @@ package com.chwipoClova.interview.controller;
 
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.feedback.request.FeedbackGenerateReq;
-import com.chwipoClova.interview.request.InterviewFeedbackGenerateReq;
-import com.chwipoClova.interview.request.InterviewInitQaReq;
-import com.chwipoClova.interview.request.InterviewInsertReq;
-import com.chwipoClova.interview.request.InterviewQaAnswerInsertReq;
+import com.chwipoClova.interview.request.*;
 import com.chwipoClova.interview.response.InterviewInsertRes;
 import com.chwipoClova.interview.response.InterviewListRes;
 import com.chwipoClova.interview.response.InterviewQaListRes;
@@ -87,6 +84,15 @@ public class InterviewController {
         return interviewService.selectQaList(userId, interviewId);
     }
 
+    @Operation(summary = "면접 삭제", description = "면접 삭제")
+    @DeleteMapping(path = "/deleteInterview")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))}
+    )
+    public CommonResponse deleteInterview(
+            @RequestBody InterviewDeleteReq interviewDeleteReq
+            ) {
+        return interviewService.deleteInterview(interviewDeleteReq);
+    }
 
     @Operation(summary = "답변 초기화", description = "답변 초기화")
     @PostMapping("/initQa")

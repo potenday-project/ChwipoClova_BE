@@ -21,4 +21,6 @@ public interface QaRepository extends JpaRepository<Qa, Long> {
     @Modifying
     @Query(value = "update Qa q set q.answer = null where q.interviewId = :interviewId and answer is not null", nativeQuery = true)
     int initQa(@Param("interviewId") Long interviewId);
+
+    void deleteByInterviewInterviewId(Long interviewId);
 }

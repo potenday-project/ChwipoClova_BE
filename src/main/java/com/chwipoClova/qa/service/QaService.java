@@ -203,4 +203,8 @@ public class QaService {
     public void initQa(Long interviewId) {
         qaRepository.initQa(interviewId);
     }
+
+    public void deleteQa(Long interviewId) {
+        qaRepository.deleteByInterviewInterviewId(interviewId);
+    }
 }

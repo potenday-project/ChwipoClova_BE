@@ -12,4 +12,6 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findByQaQaIdOrderByFeedbackId(Long qaId);
 
     Optional<Feedback> findByQaQaIdAndType(Long qaId, Integer Type);
+
+    void deleteByQaQaId(Long qaId);
 }

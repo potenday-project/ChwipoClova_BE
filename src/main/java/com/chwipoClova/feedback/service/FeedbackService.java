@@ -150,4 +150,9 @@ public class FeedbackService {
             }
         });
     }
+
+    @Transactional
+    public void deleteFeedback(Long qaId) {
+        feedbackRepository.deleteByQaQaId(qaId);
+    }
 }
