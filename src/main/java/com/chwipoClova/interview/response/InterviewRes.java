@@ -24,8 +24,8 @@ public class InterviewRes {
     private Integer status;
     @Schema(description = "등록일", example = "2023-12-09T10:13:17.838+00:00", name = "regDate")
     private Date regDate;
-    @Schema(description = "면접관의속마음", example = "속마음1", name = "feedback")
-    private String feedback;
+    @Schema(description = "면접관의속마음", example = "속마음1", name = "interviewerFeel")
+    private String interviewerFeel;
     @Schema(description = "질문데이터", name = "qaData")
     private List<QaListForFeedbackRes> qaData;
 

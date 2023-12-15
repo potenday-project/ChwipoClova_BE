@@ -138,7 +138,7 @@ public class InterviewService {
                 .userId(user.getUserId())
                 .title(interview.getTitle())
                 .status(interview.getStatus())
-                .feedback(interview.getFeedback())
+                .interviewerFeel(interview.getFeedback())
                 .regDate(interview.getRegDate())
                 .qaData(listForFeedbackResList)
                 .build();
@@ -225,7 +225,7 @@ public class InterviewService {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        String feedback = interviewRes.getFeedback();
+        String feedback = interviewRes.getInterviewerFeel();
 
         stringBuilder.append(title + "면접 결과");
 
@@ -245,13 +245,13 @@ public class InterviewService {
         stringBuilder.append("\n");
 
         interviewRes.getQaData().stream().forEach(qaListForFeedbackRes -> {
-            stringBuilder.append(qaListForFeedbackRes.getFeedback1());
+            stringBuilder.append(qaListForFeedbackRes.getKeyword());
             stringBuilder.append("\n");
 
             stringBuilder.append(qaListForFeedbackRes.getQuestion());
             stringBuilder.append("\n");
 
-            stringBuilder.append(qaListForFeedbackRes.getFeedback2());
+            stringBuilder.append(qaListForFeedbackRes.getBestAnswer());
             stringBuilder.append("\n");
         });
 

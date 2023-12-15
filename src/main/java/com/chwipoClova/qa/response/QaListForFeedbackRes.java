@@ -30,9 +30,9 @@ public class QaListForFeedbackRes {
     @Schema(description = "수정일", example = "2023-12-09T10:13:17.838+00:00", name = "modifyDate")
     private Date modifyDate;
 
-    @Schema(description = "피드백1 키워드", example = "키워드", name = "feedback1")
-    private String feedback1;
+    @Schema(description = "피드백1 키워드", example = "키워드", name = "keyword")
+    private String keyword;
 
-    @Schema(description = "피드백2 AI 답변", example = "AI 답변", name = "feedback2")
-    private String feedback2;
+    @Schema(description = "피드백2 모법답안", example = "AI 답변", name = "bestAnswer")
+    private String bestAnswer;
 }
