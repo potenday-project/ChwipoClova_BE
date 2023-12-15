@@ -29,6 +29,8 @@ public enum ExceptionCode {
 
     FILE_SIZE("852", "파일 업로드 최대 크기는 50M 입니다."),
 
+    FILE_PDF_PAGE_OVER("853", "PDF 최대 장수를 넘었습니다."),
+
     RESUME_NULL("860", "이력서 정보가 올바르지 않습니다."),
 
     RESUME_LIST_OVER("861", "이력서 최대 개수를 초과하였습니다."),
@@ -36,6 +38,8 @@ public enum ExceptionCode {
     RESUME_TOKEN_OVER("862", "이력서의 글자 수를 5,000자 이하로 줄여주세요"),
 
     RECRUIT_CONTENT_NULL("870", "채용공고 정보가 올바르지 않습니다."),
+
+    RECRUIT_TITLE_NULL("871", "채용공고 기업명이 없습니다."),
 
     INTERVIEW_NULL("880", "면접 정보가 올바르지 않습니다."),
 
@@ -61,7 +65,9 @@ public enum ExceptionCode {
 
     API_RESUME_SUMMARY_NULL("984", "이력서 요약 결과가 비어있습니다."),
 
-    API_TOKEN_COUNT_FAIL("985", "토큰 계산기 호출 실패")
+    API_TOKEN_COUNT_FAIL("985", "토큰 계산기 호출 실패"),
+
+    API_QA_NULL("986", "질문 API 결과가 비어있습니다.")
 
     ;
 

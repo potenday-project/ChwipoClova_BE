@@ -82,6 +82,9 @@ dependencies {
 	implementation group: 'commons-io', name: 'commons-io', version: '2.15.1'
 	implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
 
+	//PDF
+	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0'
+
 }
 
 

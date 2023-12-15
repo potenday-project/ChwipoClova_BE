@@ -97,7 +97,6 @@ public class InterviewService {
                 .build();
         Interview interviewRst = interviewRepository.save(interview);
 
-        // TODO 이력서 요약과 채용공고 요약을 이용해서 질문, AI 답변 생성
         List<QaQuestionInsertRes> questionData = qaService.insertQa(interviewRst);
 
         return InterviewInsertRes.builder()
@@ -216,12 +215,12 @@ public class InterviewService {
 
         stringBuilder.append("면접 관의 속마음");
         stringBuilder.append("\n");
-        stringBuilder.append(feedback);
+        stringBuilder.append(feedback == null ? "" : feedback);
 
         stringBuilder.append("\n");
         stringBuilder.append("\n");
 
-        stringBuilder.append("티키타카의 피드백");
+        stringBuilder.append("티키타카 피드백");
 
         stringBuilder.append("\n");
         stringBuilder.append("\n");
@@ -231,6 +230,9 @@ public class InterviewService {
             stringBuilder.append("\n");
 
             stringBuilder.append(qaListForFeedbackRes.getQuestion());
+            stringBuilder.append("\n");
+
+            stringBuilder.append(qaListForFeedbackRes.getAnswer());
             stringBuilder.append("\n");
 
             stringBuilder.append(qaListForFeedbackRes.getBestAnswer());

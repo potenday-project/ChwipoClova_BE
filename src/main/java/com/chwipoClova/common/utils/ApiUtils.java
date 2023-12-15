@@ -1,7 +1,10 @@
 package com.chwipoClova.common.utils;
 
+import com.chwipoClova.common.dto.UserDetailsImpl;
+import com.chwipoClova.common.entity.ApiLog;
 import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
+import com.chwipoClova.common.repository.ApiLogRepository;
 import com.chwipoClova.resume.response.ApiRes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -34,6 +40,8 @@ public class ApiUtils {
 
     private final RestTemplate restTemplate;
 
+    private final ApiLogRepository apiLogRepository;
+
     @Value("${api.url.base}")
     private String apiBaseUrl;
 
@@ -49,7 +57,6 @@ public class ApiUtils {
     @Value("${api.url.recruit}")
     private String recruit;
 
-
     @Value("${api.url.question}")
     private String question;
 
@@ -62,23 +69,46 @@ public class ApiUtils {
     @Value("${api.url.best}")
     private String best;
 
+    @Transactional
     public String callApi(URI apiUrl, HttpEntity<?> entity) {
         String resultData = null;
+        String resultMessage = null;
+        Long userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getPrincipal() instanceof UserDetailsImpl) {
+            userId = ((UserDetailsImpl) authentication.getPrincipal()).getUser().getUserId();
+        }
         try {
             ResponseEntity<String> responseAsString = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
             if (responseAsString == null) {
+                resultMessage = "API 결과 NULL";
                 log.info("API 결과 NULL");
             } else {
                 if (responseAsString.getStatusCode() == HttpStatus.OK) {
+                    resultMessage = "API 성공";
                     log.info("API 성공");
                     resultData = responseAsString.getBody();
                 } else {
+                    resultMessage = "API 통신 결과 실패 HttpStatus" + responseAsString.getStatusCode();
                     log.error("API 통신 결과 실패 HttpStatus : {} ", responseAsString.getStatusCode());
                 }
             }
         } catch (Exception e) {
+            resultMessage = "callApi 실패 error " + e.getMessage();
             log.error("callApi 실패 error : {}", e.getMessage());
         }
+
+        if (resultData == null) {
+            resultMessage = ExceptionCode.API_NULL.getMessage();
+        }
+
+        // API 로그 적재
+        ApiLog apiLog = ApiLog.builder()
+                .userId(userId)
+                .apiUrl(apiUrl.toString())
+                .message(resultMessage)
+                .build();
+        apiLogRepository.save(apiLog);
 
         if (resultData == null) {
             throw new CommonException(ExceptionCode.API_NULL.getMessage(), ExceptionCode.API_NULL.getCode());
@@ -175,7 +205,6 @@ public class ApiUtils {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("recruit_summary", recruitSummary);
         body.add("resume_summary", resumeSummary);
-
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, httpHeaders);
         URI apiUrl = UriComponentsBuilder
