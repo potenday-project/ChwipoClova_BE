@@ -117,8 +117,10 @@ public class JwtUtil {
         // 1차 토큰 검증
         if(!tokenValidation(token)) return false;
 
+        String idFromToken = getIdFromToken(token);
+        Long userId = Long.parseLong(idFromToken);
         // DB에 저장한 토큰 비교
-        Optional<Token> refreshToken = tokenRepository.findByUserUserId(Long.parseLong(getIdFromToken(token)));
+        Optional<Token> refreshToken = tokenRepository.findByUserUserId(userId);
 
         return refreshToken.isPresent() && token.equals(refreshToken.get().getRefreshToken());
     }
