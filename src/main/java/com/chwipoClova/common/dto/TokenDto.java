@@ -1,5 +1,6 @@
 package com.chwipoClova.common.dto;
 
+import com.chwipoClova.user.entity.UserEditor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

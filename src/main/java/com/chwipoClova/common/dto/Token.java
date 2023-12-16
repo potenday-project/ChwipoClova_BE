@@ -36,7 +36,7 @@ public class Token {
 
     private Date modifyDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "userId")
     private User user;
 
@@ -50,7 +50,6 @@ public class Token {
         return this;
     }
 
-
     // @PrePersist 메서드 정의 (최초 등록시 호출)
     @PrePersist
     public void prePersist() {
@@ -61,5 +60,14 @@ public class Token {
     @PreUpdate
     public void preUpdate() {
         this.modifyDate = new Date(); // 현재 날짜와 시간으로 수정일 업데이트
+    }
+
+    public TokenEditor.TokenEditorBuilder toEditor() {
+        return TokenEditor.builder()
+                .refreshToken(refreshToken);
+    }
+
+    public void edit(TokenEditor tokenEditor) {
+        refreshToken = tokenEditor.getRefreshToken();
     }
 }

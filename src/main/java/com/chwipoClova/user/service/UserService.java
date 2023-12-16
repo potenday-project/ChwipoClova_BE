@@ -2,12 +2,14 @@ package com.chwipoClova.user.service;
 
 import com.chwipoClova.common.dto.Token;
 import com.chwipoClova.common.dto.TokenDto;
+import com.chwipoClova.common.dto.TokenEditor;
 import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.repository.TokenRepository;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
 import com.chwipoClova.common.utils.JwtUtil;
+import com.chwipoClova.interview.entity.InterviewEditor;
 import com.chwipoClova.user.dto.KakaoToken;
 import com.chwipoClova.user.dto.KakaoUserInfo;
 import com.chwipoClova.user.entity.User;
@@ -104,13 +106,16 @@ public class UserService {
 
             TokenDto tokenDto = jwtUtil.createAllToken(String.valueOf(userId));
 
-            // Refresh토큰 있는지 확인
+            // Refresh 토큰 있는지 확인
             Optional<Token> refreshToken = tokenRepository.findByUserUserId(userInfoRst.getUserId());
 
             // 있다면 새토큰 발급후 업데이트
             // 없다면 새로 만들고 디비 저장
             if(refreshToken.isPresent()) {
-                tokenRepository.save(refreshToken.get().updateToken(tokenDto.getRefreshToken()));
+                Token token = refreshToken.get();
+                TokenEditor.TokenEditorBuilder editorBuilder = token.toEditor();
+                TokenEditor interviewEditor = editorBuilder.refreshToken(tokenDto.getRefreshToken()).build();
+                token.edit(interviewEditor);
             }else {
                 Token newToken = new Token(tokenDto.getRefreshToken(),  User.builder().userId(userInfoRst.getUserId()).build());
                 tokenRepository.save(newToken);
