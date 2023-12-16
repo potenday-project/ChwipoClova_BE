@@ -33,7 +33,9 @@ import com.chwipoClova.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -187,14 +189,7 @@ public class InterviewService {
     }
 
     public void downloadInterview(Long userId, Long interviewId, HttpServletResponse response) throws IOException {
-        Interview interview = interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
-
-        Integer status = interview.getStatus();
-
-        // 완료 된 질문은 사용 불가
-        if (status == 1) {
-            throw new CommonException(ExceptionCode.INTERVIEW_COMPLETE.getMessage(), ExceptionCode.INTERVIEW_COMPLETE.getCode());
-        }
+        interviewRepository.findByUserUserIdAndInterviewId(userId, interviewId).orElseThrow(() -> new CommonException(ExceptionCode.INTERVIEW_NULL.getMessage(), ExceptionCode.INTERVIEW_NULL.getCode()));
 
         InterviewRes interviewRes = selectInterview(userId, interviewId);
 
@@ -223,20 +218,33 @@ public class InterviewService {
         stringBuilder.append("티키타카 피드백");
 
         stringBuilder.append("\n");
-        stringBuilder.append("\n");
 
         interviewRes.getQaData().stream().forEach(qaListForFeedbackRes -> {
-            stringBuilder.append(qaListForFeedbackRes.getKeyword());
+            List<String> keywordList = qaListForFeedbackRes.getKeyword();
             stringBuilder.append("\n");
 
-            stringBuilder.append(qaListForFeedbackRes.getQuestion());
-            stringBuilder.append("\n");
+            if (keywordList != null && keywordList.size() > 0) {
+                stringBuilder.append(keywordList.size() > 0 ? keywordList.toString() : "");
+                stringBuilder.append("\n");
+            }
 
-            stringBuilder.append(qaListForFeedbackRes.getAnswer());
-            stringBuilder.append("\n");
+            String question = qaListForFeedbackRes.getQuestion();
+            if (StringUtils.isNotBlank(question)) {
+                stringBuilder.append(question);
+                stringBuilder.append("\n");
+            }
 
-            stringBuilder.append(qaListForFeedbackRes.getBestAnswer());
-            stringBuilder.append("\n");
+            String answer = qaListForFeedbackRes.getAnswer();
+            if (StringUtils.isNotBlank(answer)) {
+                stringBuilder.append(answer);
+                stringBuilder.append("\n");
+            }
+
+            String bestAnswer = qaListForFeedbackRes.getBestAnswer();
+            if (StringUtils.isNotBlank(bestAnswer)) {
+                stringBuilder.append(bestAnswer);
+                stringBuilder.append("\n");
+            }
         });
 
         String content = stringBuilder.toString();
