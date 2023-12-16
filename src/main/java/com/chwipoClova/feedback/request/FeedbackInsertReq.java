@@ -1,5 +1,6 @@
 package com.chwipoClova.feedback.request;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -14,5 +15,9 @@ public class FeedbackInsertReq {
 
     @Schema(description = "답변", example = "답변1", name = "answer")
     private String answer;
+
+    @Hidden
+    @Schema(description = "apiNum", example = "1", name = "apiNum")
+    private Long apiNum;
 
 }

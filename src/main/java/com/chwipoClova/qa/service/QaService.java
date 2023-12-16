@@ -29,13 +29,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
@@ -95,7 +93,10 @@ public class QaService {
         Qa lastQa = qaRepository.findFirstByInterviewInterviewIdOrderByQaIdDesc(interviewId);
         Long lastQaId = lastQa.getQaId();
 
+        StringBuilder stringBuilder = new StringBuilder();
         AtomicBoolean lastCkAtomic = new AtomicBoolean(false);
+
+        AtomicLong answerCnt = new AtomicLong();
         qaAnswerDataInsertReqList.stream().forEach(qaAnswerDataInsertReq -> {
             String answer = qaAnswerDataInsertReq.getAnswer();
 
@@ -111,11 +112,17 @@ public class QaService {
                     lastCkAtomic.set(true);
                 }
 
+                answerCnt.getAndIncrement();
+
+                stringBuilder.append(answerCnt.get() + ". " + qa.getAnswer());
+                stringBuilder.append("\n");
+
                 // 피드백 정보
                 FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
                 feedbackInsertReq.setQaId(qa.getQaId());
                 feedbackInsertReq.setAnswer(qa.getAnswer());
                 feedbackInsertReq.setQuestion(qa.getQuestion());
+                feedbackInsertReq.setApiNum(answerCnt.get());
                 feedbackInsertListReq.add(feedbackInsertReq);
             }
         });
@@ -123,25 +130,24 @@ public class QaService {
         // 마지막 답변이 있을 경우 면접 완료 처리 및 피드백 생성
         Boolean lastCk = lastCkAtomic.get();
         if (lastCk) {
+
+            String allAnswerData = stringBuilder.toString().trim();
+
             // 면접관의 속마음
-            //apiUtils.feel();
+            String apiFeelRst = apiUtils.feel(allAnswerData);
 
-            // 키워드
-
-
-            // 모범답안
-
-            // 피드백 요청 및 등록
-            feedbackService.insertFeedback(feedbackInsertListReq);
+            feedbackService.insertFeedback(allAnswerData, feedbackInsertListReq);
 
             // 면접 완료 처리
             InterviewEditor.InterviewEditorBuilder editorBuilder = interview.toEditor();
-            InterviewEditor interviewEditor = editorBuilder.status(1).build();
+            InterviewEditor interviewEditor = editorBuilder.status(1).feedback(apiFeelRst).build();
             interview.edit(interviewEditor);
         }
 
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
+
+
 
     public List<QaListRes> selectQaList(Long interviewId) {
         List<QaListRes> qaListResList = new ArrayList<>();
@@ -166,13 +172,21 @@ public class QaService {
         List<QaListRes> qaListRes = selectQaList(interviewId);
         List<QaListForFeedbackRes> listForFeedbackResList = new ArrayList<>();
 
+        AtomicReference<List<String>> atomicListRef = new AtomicReference<>(new ArrayList<>());
+
         qaListRes.stream().forEach(qaListRes1 -> {
             AtomicReference<String> feedback1 = new AtomicReference<>("");
             AtomicReference<String> feedback2 = new AtomicReference<>("");
             feedbackService.selectFeedbackList(qaListRes1.getQaId()).stream().forEach(feedbackListRes -> {
                 Integer type = feedbackListRes.getType();
                 if (type == 1) {
-                    feedback1.set(feedbackListRes.getContent());
+                    // 키워드는 ,로 분리
+                    String keyword = feedbackListRes.getContent();
+                    String[] keywordArray = keyword.split(",");
+
+                    for (String key : keywordArray) {
+                        addElement(atomicListRef, key);
+                    }
                 } else if (type == 2) {
                     feedback2.set(feedbackListRes.getContent());
                 }
@@ -185,7 +199,7 @@ public class QaService {
                     .answer(qaListRes1.getAnswer())
                     .regDate(qaListRes1.getRegDate())
                     .modifyDate(qaListRes1.getModifyDate())
-                    .keyword(feedback1.get())
+                    .keyword(atomicListRef.get())
                     .bestAnswer(feedback2.get())
                     .build();
             listForFeedbackResList.add(qalistForFeedbackRes);
@@ -289,5 +303,17 @@ public class QaService {
         }
 
         return apiQaList;
+    }
+
+    // 원자적으로 리스트에 요소를 추가하는 메소드
+    private static void addElement(AtomicReference<List<String>> atomicListRef, String element) {
+        List<String> oldList;
+        List<String> newList;
+
+        do {
+            oldList = atomicListRef.get();
+            newList = new ArrayList<>(oldList);
+            newList.add(element);
+        } while (!atomicListRef.compareAndSet(oldList, newList));
     }
 }

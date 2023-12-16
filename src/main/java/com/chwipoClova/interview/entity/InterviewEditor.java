@@ -9,8 +9,11 @@ public class InterviewEditor {
 
     private Integer status;
 
+    private String feedback;
+
     @Builder
-    public InterviewEditor(Integer status) {
+    public InterviewEditor(Integer status, String feedback) {
         this.status = status;
+        this.feedback = feedback;
     }
 }

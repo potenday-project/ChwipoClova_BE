@@ -31,7 +31,7 @@ public class QaListForFeedbackRes {
     private Date modifyDate;
 
     @Schema(description = "피드백1 키워드", example = "키워드", name = "keyword")
-    private String keyword;
+    private List<String> keyword;
 
     @Schema(description = "피드백2 모법답안", example = "AI 답변", name = "bestAnswer")
     private String bestAnswer;
