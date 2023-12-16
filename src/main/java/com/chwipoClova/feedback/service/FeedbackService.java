@@ -159,7 +159,7 @@ public class FeedbackService {
             if (splitSummary.indexOf(".") != -1) {
                 String num = splitSummary.substring(0, splitSummary.indexOf("."));
                 if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
-                    String content = splitSummary.substring(splitSummary.indexOf(".")).trim();
+                    String content = splitSummary.substring(splitSummary.indexOf(".") + 1).trim();
 
                     FeedbackListRes feedbackListRes = FeedbackListRes.builder()
                             .qaId(Long.parseLong(num))
@@ -177,7 +177,7 @@ public class FeedbackService {
             if (splitSummary.indexOf(".") != -1) {
                 String num = splitSummary.substring(0, splitSummary.indexOf("."));
                 if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
-                    String content = splitSummary.substring(splitSummary.indexOf(".")).trim();
+                    String content = splitSummary.substring(splitSummary.indexOf(".") + 1).trim();
 
                     FeedbackListRes feedbackListRes = FeedbackListRes.builder()
                             .qaId(Long.parseLong(num))
