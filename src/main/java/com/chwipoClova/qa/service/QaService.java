@@ -129,7 +129,11 @@ public class QaService {
 
         // 마지막 답변이 있을 경우 면접 완료 처리 및 피드백 생성
         Boolean lastCk = lastCkAtomic.get();
-        if (lastCk) {
+
+        // 마지막 문제 넘기기 눌렀을 경우
+        Integer lastBtnCk = qaAnswerInsertReq.getLastBtnCk();
+
+        if (lastCk || lastBtnCk == 1) {
 
             String allAnswerData = stringBuilder.toString().trim();
 
