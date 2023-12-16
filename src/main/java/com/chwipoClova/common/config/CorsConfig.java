@@ -16,7 +16,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3000", "https://tikitaka.chat", "https://tikitakachatdata.com"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "https://tikitaka.chat", "https://www.tikitaka.chat", "https://tikitakachatdata.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("*"));
