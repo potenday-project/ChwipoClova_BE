@@ -5,6 +5,7 @@ import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
 import com.chwipoClova.common.utils.ApiUtils;
+import com.chwipoClova.common.utils.FileUtil;
 import com.chwipoClova.resume.entity.Resume;
 import com.chwipoClova.resume.repository.ResumeRepository;
 import com.chwipoClova.resume.request.ResumeDeleteOldReq;
@@ -81,10 +82,9 @@ public class ResumeService {
     public ResumeUploadRes uploadResume(Long userId, MultipartFile file) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new CommonException(ExceptionCode.USER_NULL.getMessage(), ExceptionCode.USER_NULL.getCode()));
 
-        String contentType = file.getContentType();
-        assert contentType != null;
+        String contentType = FileUtil.getOriginalFileExtension(file);
 
-        if (contentType.toLowerCase().indexOf(uploadType) == -1) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(contentType) || contentType.toLowerCase().indexOf(uploadType) == -1) {
             throw new CommonException(ExceptionCode.FILE_EXT_PDF.getMessage(), ExceptionCode.FILE_EXT_PDF.getCode());
         }
 
