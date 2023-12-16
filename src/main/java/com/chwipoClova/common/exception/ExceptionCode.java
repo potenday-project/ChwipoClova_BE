@@ -69,7 +69,7 @@ public enum ExceptionCode {
 
     API_QA_NULL("986", "질문 API 결과가 비어있습니다."),
 
-    API_TOKEN_COUNT_OVER("987", "토큰 최대 개수를 넘었습니다."),
+    API_TOKEN_COUNT_OVER("987", "글자수를 5000자 이하로 줄여주세요.")
 
     ;
 
