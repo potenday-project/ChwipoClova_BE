@@ -177,18 +177,23 @@ public class QaService {
         List<QaListForFeedbackRes> listForFeedbackResList = new ArrayList<>();
 
         AtomicReference<List<String>> feedback1 = new AtomicReference<>(new ArrayList<>());
-
         qaListRes.stream().forEach(qaListRes1 -> {
             AtomicReference<String> feedback2 = new AtomicReference<>("");
+
             feedbackService.selectFeedbackList(qaListRes1.getQaId()).stream().forEach(feedbackListRes -> {
                 Integer type = feedbackListRes.getType();
                 if (type == 1) {
                     // 키워드는 ,로 분리
                     String keyword = feedbackListRes.getContent();
                     String[] keywordArray = keyword.split(",");
+                    AtomicInteger atomicInteger = new AtomicInteger();
 
                     for (String key : keywordArray) {
-                        addElement(feedback1, key);
+                        atomicInteger.incrementAndGet();
+                        Integer keywordCnt = atomicInteger.get();
+                        if (keywordCnt < 5) {
+                            addElement(feedback1, key);
+                        }
                     }
                 } else if (type == 2) {
                     feedback2.set(feedbackListRes.getContent());
