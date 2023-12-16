@@ -148,41 +148,39 @@ public class JwtUtil {
     }
 
     public void setCookieRefreshToken(HttpServletResponse response, String refreshToken) {
-        /*ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, refreshToken)
+        ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, refreshToken)
                 .maxAge(REFRESH_COOKIE_TIME)
                 .path("/")
-                //.secure(true)
-                .domain("localhost")
+                .secure(true)
                 .sameSite("None")
                 .httpOnly(false)
                 .build();
-
-        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());*/
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        /*response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
         Cookie cookie = new Cookie(REFRESH_TOKEN, refreshToken);
         cookie.setMaxAge(REFRESH_COOKIE_TIME);
         cookie.setHttpOnly(true);
         //cookie.setSecure(true);
         cookie.setPath("/");
-        response.addCookie(cookie);
+        response.addCookie(cookie);*/
     }
 
     public void setDelCookieRefreshToken(HttpServletResponse response) {
-/*        ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, null)
+        ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, null)
                 .maxAge(0)
                 .path("/")
-                .domain("localhost")
-                //.secure(true)
+                .secure(true)
                 .sameSite("None")
                 .httpOnly(false)
                 .build();
-        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());*/
+        response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
-        Cookie cookie = new Cookie(REFRESH_TOKEN, null);
+/*        Cookie cookie = new Cookie(REFRESH_TOKEN, null);
         cookie.setMaxAge(0);
         cookie.setHttpOnly(true);
         //cookie.setSecure(true);
         cookie.setPath("/");
-        response.addCookie(cookie);
+        response.addCookie(cookie);*/
 
     }
 
