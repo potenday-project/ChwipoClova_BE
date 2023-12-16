@@ -13,6 +13,7 @@ import com.chwipoClova.user.dto.KakaoUserInfo;
 import com.chwipoClova.user.entity.User;
 import com.chwipoClova.user.repository.UserRepository;
 import com.chwipoClova.user.request.UserLoginReq;
+import com.chwipoClova.user.request.UserLogoutReq;
 import com.chwipoClova.user.response.UserInfoRes;
 import com.chwipoClova.user.response.UserLoginRes;
 import com.chwipoClova.user.response.UserSnsUrlRes;
@@ -207,7 +208,8 @@ public class UserService {
                 .build();
     }
 
-    public CommonResponse logout(HttpServletResponse response, Long userId) {
+    public CommonResponse logout(HttpServletResponse response, UserLogoutReq userLogoutReq) {
+        Long userId = userLogoutReq.getUserId();
         tokenRepository.deleteById(userId);
         jwtUtil.setHeaderAccessToken(response, "");
         jwtUtil.setDelCookieRefreshToken(response);

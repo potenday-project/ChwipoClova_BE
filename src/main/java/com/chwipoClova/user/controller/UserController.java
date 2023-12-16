@@ -5,6 +5,8 @@ import com.chwipoClova.common.response.CommonMsgResponse;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
 import com.chwipoClova.user.entity.User;
+import com.chwipoClova.user.request.UserLoginReq;
+import com.chwipoClova.user.request.UserLogoutReq;
 import com.chwipoClova.user.response.UserInfoRes;
 import com.chwipoClova.user.response.UserLoginRes;
 import com.chwipoClova.user.response.UserSnsUrlRes;
@@ -100,14 +102,14 @@ public class UserController {
     }
 
     @Operation(summary = "로그아웃", description = "로그아웃")
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))
     }
     )
-    public CommonResponse logout(@Schema(description = "유저 ID", example = "1", name = "userId") @NotBlank(message = "UserID를 입력해주세요.") Long userId,
-                                    @Parameter(hidden = true) HttpServletResponse response
+    public CommonResponse logout(@RequestBody UserLogoutReq userLogoutReq,
+                                 @Parameter(hidden = true) HttpServletResponse response
     ) {
-        return userService.logout(response, userId);
+        return userService.logout(response, userLogoutReq);
     }
 }
