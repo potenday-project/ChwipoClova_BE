@@ -58,7 +58,7 @@ public class WebSecurityConfig {
                         authorize
                                 //.requestMatchers("/**").permitAll().anyRequest().authenticated()
                                 .requestMatchers("/"
-                                ,"/user/getKakaoUrl","/user/kakaoLogin","/user/kakaoCallback","/user/logout"
+                                ,"/user/getKakaoUrl","/user/kakaoLogin", "/user/getKakaoDevUrl", "/user/kakaoDevLogin", "/user/kakaoCallback","/user/logout"
                                 ).permitAll().anyRequest().authenticated()
                                 //.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 

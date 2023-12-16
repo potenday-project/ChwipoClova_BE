@@ -55,6 +55,16 @@ public class UserController {
         return userService.getKakaoUrl();
     }
 
+    @Operation(summary = "카카오 개발 로그인 URL", description = "카카오 개발 로그인 URL")
+    @GetMapping("/getKakaoDevUrl")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK")
+    }
+    )
+    public UserSnsUrlRes getKakaoDevUrl() throws Exception {
+        return userService.getKakaoLocalUrl();
+    }
+
     @Operation(summary = "카카오 로그인", description = "카카오 로그인 (카카오 로그인 URL 호출해서 로그인 성공하면 나오는 코드를 입력)")
     @GetMapping("/kakaoLogin")
     @ApiResponses(value = {
@@ -65,6 +75,18 @@ public class UserController {
     public CommonResponse kakaoLogin(@Schema(description = "로그인코드", example = "1", name = "code") @RequestParam(name = "code") String code, HttpServletResponse response) throws Exception {
         return userService.kakaoLogin(code, response);
     }
+
+    @Operation(summary = "카카오 개발 로그인", description = "카카오 개발 로그인 (카카오 로그인 URL 호출해서 로그인 성공하면 나오는 코드를 입력)")
+    @GetMapping("/kakaoDevLogin")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = UserLoginRes.class))),
+            @ApiResponse(responseCode = "700", description = "신규 가입되었습니다.", content = @Content(schema = @Schema(implementation = String.class)))
+    }
+    )
+    public CommonResponse kakaoDevLogin(@Schema(description = "로그인코드", example = "1", name = "code") @RequestParam(name = "code") String code, HttpServletResponse response) throws Exception {
+        return userService.kakaoDevLogin(code, response);
+    }
+
 
     @Hidden
     @Operation(summary = "카카오 로그인 콜백", description = "카카오 로그인 콜백")
