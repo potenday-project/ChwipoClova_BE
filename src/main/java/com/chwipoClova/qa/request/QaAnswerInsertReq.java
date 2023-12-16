@@ -14,6 +14,9 @@ public class QaAnswerInsertReq {
     @Schema(description = "면접 ID", example = "1", name = "interviewId")
     private Long interviewId;
 
+    @Schema(description = "마지막 버튼 넘기기 여부", example = "0", name = "lastBtnCk")
+    private Integer lastBtnCk;
+
     @Schema(description = "답변데이터", name = "answerData")
     private List<QaAnswerDataInsertReq> answerData;
 
