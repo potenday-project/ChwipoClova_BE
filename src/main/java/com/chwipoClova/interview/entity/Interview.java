@@ -66,11 +66,13 @@ public class Interview {
 
     public InterviewEditor.InterviewEditorBuilder toEditor() {
         return InterviewEditor.builder()
-                .status(status);
+                .status(status)
+                .feedback(feedback);
     }
 
     public void edit(InterviewEditor interviewEditor) {
         status = interviewEditor.getStatus();
+        feedback = interviewEditor.getFeedback();
     }
 
 }

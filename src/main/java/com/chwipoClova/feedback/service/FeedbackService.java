@@ -4,6 +4,7 @@ import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
+import com.chwipoClova.common.utils.ApiUtils;
 import com.chwipoClova.feedback.entity.Feedback;
 import com.chwipoClova.feedback.entity.FeedbackEditor;
 import com.chwipoClova.feedback.repository.FeedbackRepository;
@@ -42,27 +43,20 @@ public class FeedbackService {
 
     private final UserRepository userRepository;
 
+    private final ApiUtils apiUtils;
+
     @Transactional
-    public CommonResponse insertFeedback(List<FeedbackInsertReq> feedbackInsertListReq) throws IOException {
+    public CommonResponse insertFeedback(String allAnswerData, List<FeedbackInsertReq> feedbackInsertListReq) throws IOException {
 
         // TODO 피드백 연동 필요함 답변이 있는 경우만 전달하자
-        // 테스트 데이터
-        List<FeedBackApiRes> feedBackApiListRes = new ArrayList<>();
-        feedbackInsertListReq.stream().forEach(feedbackInsertReq -> {
-            Long qaId = feedbackInsertReq.getQaId();
-            FeedBackApiRes feedBackApiRes = new FeedBackApiRes();
-            feedBackApiRes.setQaId(qaId);
-            feedBackApiRes.setType(1);
-            feedBackApiRes.setContent("피드백1입니다.");
-            feedBackApiListRes.add(feedBackApiRes);
-            FeedBackApiRes feedBackApiRes2 = new FeedBackApiRes();
-            feedBackApiRes2.setQaId(qaId);
-            feedBackApiRes2.setType(2);
-            feedBackApiRes2.setContent("피드백2입니다.");
-            feedBackApiListRes.add(feedBackApiRes2);
-        });
+        // 키워드
+        String apiKeywordRst = apiUtils.keyword(allAnswerData);
 
-        insertAllFeedback(feedBackApiListRes);
+        // 모범답안
+        String apiBestRst = apiUtils.best(allAnswerData);
+
+        // 피드백 매핑
+        setApiFeedbackData(apiKeywordRst, apiBestRst, feedbackInsertListReq);
 
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
@@ -154,5 +148,63 @@ public class FeedbackService {
     @Transactional
     public void deleteFeedback(Long qaId) {
         feedbackRepository.deleteByQaQaId(qaId);
+    }
+
+    private void setApiFeedbackData(String apiKeywordRst, String apiBestRst, List<FeedbackInsertReq> feedbackInsertListReq) {
+        List<FeedbackListRes> feedbackList = new ArrayList<>();
+        String[] splitKeywordList = apiKeywordRst.split("\n");
+
+        // 키워드 가공
+        for (String splitSummary : splitKeywordList) {
+            if (splitSummary.indexOf(".") != -1) {
+                String num = splitSummary.substring(0, splitSummary.indexOf("."));
+                if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
+                    String content = splitSummary.substring(splitSummary.indexOf(".")).trim();
+
+                    FeedbackListRes feedbackListRes = FeedbackListRes.builder()
+                            .qaId(Long.parseLong(num))
+                            .type(1)
+                            .content(content)
+                            .build();
+                    feedbackList.add(feedbackListRes);
+                }
+            }
+        }
+
+        // 모법답안 가공
+        String[] splitBestList = apiBestRst.split("\n");
+        for (String splitSummary : splitBestList) {
+            if (splitSummary.indexOf(".") != -1) {
+                String num = splitSummary.substring(0, splitSummary.indexOf("."));
+                if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
+                    String content = splitSummary.substring(splitSummary.indexOf(".")).trim();
+
+                    FeedbackListRes feedbackListRes = FeedbackListRes.builder()
+                            .qaId(Long.parseLong(num))
+                            .type(2)
+                            .content(content)
+                            .build();
+                    feedbackList.add(feedbackListRes);
+                }
+            }
+        }
+
+        List<FeedBackApiRes> feedBackApiListRes = new ArrayList<>();
+        feedbackInsertListReq.stream().forEach(feedbackInsertReq -> {
+
+            Long qaId = feedbackInsertReq.getQaId();
+            Long apiNum = feedbackInsertReq.getApiNum();
+
+            feedbackList.stream().forEach(feedback -> {
+                if (apiNum == feedback.getQaId()) {
+                    FeedBackApiRes feedBackApiRes = new FeedBackApiRes();
+                    feedBackApiRes.setQaId(qaId);
+                    feedBackApiRes.setType(feedback.getType());
+                    feedBackApiRes.setContent(feedback.getContent());
+                    feedBackApiListRes.add(feedBackApiRes);
+                }
+            });
+            insertAllFeedback(feedBackApiListRes);
+        });
     }
 }

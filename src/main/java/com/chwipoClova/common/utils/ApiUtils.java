@@ -72,7 +72,7 @@ public class ApiUtils {
     @Transactional
     public String callApi(URI apiUrl, HttpEntity<?> entity) {
         String resultData = null;
-        String resultMessage = null;
+        String resultMessage;
         Long userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getPrincipal() instanceof UserDetailsImpl) {
@@ -163,7 +163,7 @@ public class ApiUtils {
         String count = countToken(text);
         int tokenCnt = Integer.parseInt(count);
         if (tokenCnt >= limitCnt) {
-            throw new CommonException(ExceptionCode.API_TOKEN_COUNT_FAIL.getMessage(), ExceptionCode.API_TOKEN_COUNT_FAIL.getCode());
+            throw new CommonException(ExceptionCode.API_TOKEN_COUNT_OVER.getMessage(), ExceptionCode.API_TOKEN_COUNT_OVER.getCode());
         } else {
             return true;
         }
