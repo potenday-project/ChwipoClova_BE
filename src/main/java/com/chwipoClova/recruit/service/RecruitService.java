@@ -141,7 +141,7 @@ public class RecruitService {
             apiUtils.countTokenLimitCk(resumeTxt, apiBaseTokenLimit);
 
             // 채용공고 요약
-            String summary = apiUtils.summaryRecruit(recruitContent);
+            String summary = apiUtils.summaryRecruit(resumeTxt);
 
             // 채용공고에서 제목 추출
             String title = getRecruitTitle(summary);
