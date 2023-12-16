@@ -171,8 +171,7 @@ public class RecruitService {
     private String getRecruitTitle(String summary) {
         String title = null;
         // 현재 사용하지 않는 --- 제거 및 줄바꿈 분리
-        if (summary.indexOf("---") != -1) {
-            String[] splitSummaryList = summary.substring(0, summary.lastIndexOf("---")).split("\n");
+            String[] splitSummaryList = summary.split("\n");
 
             // 기업명 고정
             String targetWord = "기업 :";
@@ -193,7 +192,6 @@ public class RecruitService {
                     }
                 }
             }
-        }
 
         if (org.apache.commons.lang3.StringUtils.isBlank(title)) {
             throw new CommonException(ExceptionCode.RECRUIT_TITLE_NULL.getMessage(), ExceptionCode.RECRUIT_TITLE_NULL.getCode());
