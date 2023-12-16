@@ -13,6 +13,7 @@ import com.chwipoClova.feedback.request.FeedbackInsertReq;
 import com.chwipoClova.feedback.response.FeedBackApiRes;
 import com.chwipoClova.feedback.response.FeedbackListRes;
 import com.chwipoClova.interview.entity.Interview;
+import com.chwipoClova.interview.entity.InterviewEditor;
 import com.chwipoClova.interview.repository.InterviewRepository;
 import com.chwipoClova.qa.entity.Qa;
 import com.chwipoClova.qa.entity.QaEditor;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 @RequiredArgsConstructor
 @Service
@@ -80,7 +82,7 @@ public class FeedbackService {
     }
 
     @Transactional
-    public CommonResponse generateFeedback(FeedbackGenerateReq feedbackGenerateReq) {
+    public CommonResponse generateFeedback(FeedbackGenerateReq feedbackGenerateReq) throws IOException {
         Long interviewId = feedbackGenerateReq.getInterviewId();
         Long userId = feedbackGenerateReq.getUserId();
 
@@ -91,29 +93,37 @@ public class FeedbackService {
         if (status != 1) {
             throw new CommonException(ExceptionCode.INTERVIEW_NOT_COMPLETE.getMessage(), ExceptionCode.INTERVIEW_NOT_COMPLETE.getCode());
         }
-
-        List<Qa> qaList = qaRepository.findByInterviewInterviewIdOrderByQaId(interviewId);
-
-        // TODO 피드백 연동 필요함 답변이 있는 경우만 전달하자
-        List<FeedBackApiRes> feedBackApiListRes = new ArrayList<>();
-        qaList.stream().forEach(qa -> {
+        StringBuilder stringBuilder = new StringBuilder();
+        AtomicLong answerCnt = new AtomicLong();
+        List<FeedbackInsertReq> feedbackInsertListReq = new ArrayList<>();
+        qaRepository.findByInterviewInterviewIdOrderByQaId(interviewId).stream().forEach(qa -> {
             String answer = qa.getAnswer();
+
+            // 답변 내용이 있을 경우 답변 저장 및 피드백 생성
             if (StringUtils.isNotBlank(answer)) {
-                Long qaId = qa.getQaId();
-                FeedBackApiRes feedBackApiRes = new FeedBackApiRes();
-                feedBackApiRes.setQaId(qaId);
-                feedBackApiRes.setType(1);
-                feedBackApiRes.setContent("재생성 피드백1입니다.");
-                feedBackApiListRes.add(feedBackApiRes);
-                FeedBackApiRes feedBackApiRes2 = new FeedBackApiRes();
-                feedBackApiRes2.setQaId(qaId);
-                feedBackApiRes2.setType(2);
-                feedBackApiRes2.setContent("재생성 피드백2입니다.");
-                feedBackApiListRes.add(feedBackApiRes2);
+                answerCnt.getAndIncrement();
+
+                stringBuilder.append(answerCnt.get() + ". " + qa.getAnswer());
+                stringBuilder.append("\n");
+
+                FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
+                feedbackInsertReq.setQaId(qa.getQaId());
+                feedbackInsertReq.setAnswer(qa.getAnswer());
+                feedbackInsertReq.setQuestion(qa.getQuestion());
+                feedbackInsertReq.setApiNum(answerCnt.get());
+                feedbackInsertListReq.add(feedbackInsertReq);
             }
         });
 
-        insertAllFeedback(feedBackApiListRes);
+        String allAnswerData = stringBuilder.toString().trim();
+        // 면접관의 속마음
+        String apiFeelRst = apiUtils.feel(allAnswerData);
+        InterviewEditor.InterviewEditorBuilder editorBuilder = interview.toEditor();
+        InterviewEditor interviewEditor = editorBuilder.feedback(apiFeelRst).build();
+        interview.edit(interviewEditor);
+
+        insertFeedback(allAnswerData, feedbackInsertListReq);
+
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
 

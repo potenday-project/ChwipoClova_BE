@@ -256,7 +256,7 @@ public class InterviewService {
         response.getOutputStream().close();
     }
 
-    public CommonResponse generateFeedback(FeedbackGenerateReq feedbackGenerateReq) {
+    public CommonResponse generateFeedback(FeedbackGenerateReq feedbackGenerateReq) throws IOException {
         return feedbackService.generateFeedback(feedbackGenerateReq);
     }
 
