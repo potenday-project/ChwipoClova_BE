@@ -68,6 +68,9 @@ public class UserService {
     @Value("${kakao.redirect_uri}")
     private String redirectUri;
 
+    @Value("${kakao.redirect_local_uri}")
+    private String redirectLocalUri;
+
 
     public UserSnsUrlRes getKakaoUrl() {
         String kakaoUrl = kakaoAuthUrl + "?response_type=code" + "&client_id=" + clientId
@@ -228,5 +231,100 @@ public class UserService {
                 .regDate(user.getRegDate())
                 .modifyDate(user.getModifyDate())
                 .build();
+    }
+
+    public UserSnsUrlRes getKakaoLocalUrl() {
+        String kakaoUrl = kakaoAuthUrl + "?response_type=code" + "&client_id=" + clientId
+                + "&redirect_uri=" + redirectLocalUri;
+        UserSnsUrlRes userSnsUrlRes = UserSnsUrlRes.builder()
+                .url(kakaoUrl)
+                .build();
+        return userSnsUrlRes;
+    }
+
+    public CommonResponse kakaoDevLogin(String code, HttpServletResponse response) {
+        KakaoToken kakaoToken = requestDevAccessToken(code);
+        KakaoUserInfo kakaoUserInfo = requestOauthInfo(kakaoToken);
+
+        long snsId = kakaoUserInfo.getId();
+        String email = kakaoUserInfo.getEmail();
+        String nickname = kakaoUserInfo.getNickname();
+        Integer snsType = kakaoUserInfo.getOAuthProvider().getCode();
+        String thumbnailImageUrl = kakaoUserInfo.getThumbnailImageUrl();
+        String profileImageUrl = kakaoUserInfo.getProfileImageUrl();
+
+        Optional<User> userInfo = userRepository.findBySnsTypeAndSnsId(snsType, snsId);
+
+        // 유저 정보가 있다면 업데이트 없으면 등록
+        if (userInfo.isPresent()) {
+            User userInfoRst = userInfo.get();
+
+            Long userId = userInfoRst.getUserId();
+
+            TokenDto tokenDto = jwtUtil.createAllToken(String.valueOf(userId));
+
+            // Refresh토큰 있는지 확인
+            Optional<Token> refreshToken = tokenRepository.findByUserUserId(userInfoRst.getUserId());
+
+            // 있다면 새토큰 발급후 업데이트
+            // 없다면 새로 만들고 디비 저장
+            if(refreshToken.isPresent()) {
+                tokenRepository.save(refreshToken.get().updateToken(tokenDto.getRefreshToken()));
+            }else {
+                Token newToken = new Token(tokenDto.getRefreshToken(),  User.builder().userId(userInfoRst.getUserId()).build());
+                tokenRepository.save(newToken);
+            }
+
+            // response 헤더에 Access Token / Refresh Token 넣음
+            jwtUtil.setResonseJwtToken(response, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
+
+            UserLoginRes userLoginRes = UserLoginRes.builder()
+                    .snsId(userInfoRst.getSnsId())
+                    .userId(userId)
+                    .email(userInfoRst.getEmail())
+                    .name(userInfoRst.getName())
+                    .snsType(userInfoRst.getSnsType())
+                    .thumbnailImage(userInfoRst.getThumbnailImage())
+                    .profileImage(userInfoRst.getProfileImage())
+                    .regDate(userInfoRst.getRegDate())
+                    .modifyDate(userInfoRst.getModifyDate())
+                    .build();
+
+            return new CommonResponse<>(String.valueOf(HttpStatus.OK.value()), userLoginRes, HttpStatus.OK.getReasonPhrase());
+        } else {
+            log.info("신규유저 등록 {}", nickname);
+            User user = User.builder()
+                    .snsId(snsId)
+                    .email(email)
+                    .name(nickname)
+                    .snsType(snsType)
+                    .thumbnailImage(thumbnailImageUrl)
+                    .profileImage(profileImageUrl)
+                    .regDate(new Date())
+                    .build();
+            userRepository.save(user);
+            return new CommonResponse<>(MessageCode.NEW_USER.getCode(), null, MessageCode.NEW_USER.getMessage());
+        }
+    }
+
+    private KakaoToken requestDevAccessToken(String code) {
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();;
+        body.add("grant_type", grantType);
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("redirect_uri", redirectLocalUri);
+        body.add("code", code);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, httpHeaders);
+
+        KakaoToken response = restTemplate.postForObject(tokenUrl, request, KakaoToken.class);
+
+        // TODO 토큰 정보를 가져오지 못하면 예외발생 처리 추가
+        assert response != null;
+        return response;
     }
 }
