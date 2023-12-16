@@ -172,10 +172,9 @@ public class QaService {
         List<QaListRes> qaListRes = selectQaList(interviewId);
         List<QaListForFeedbackRes> listForFeedbackResList = new ArrayList<>();
 
-        AtomicReference<List<String>> atomicListRef = new AtomicReference<>(new ArrayList<>());
+        AtomicReference<List<String>> feedback1 = new AtomicReference<>(new ArrayList<>());
 
         qaListRes.stream().forEach(qaListRes1 -> {
-            AtomicReference<String> feedback1 = new AtomicReference<>("");
             AtomicReference<String> feedback2 = new AtomicReference<>("");
             feedbackService.selectFeedbackList(qaListRes1.getQaId()).stream().forEach(feedbackListRes -> {
                 Integer type = feedbackListRes.getType();
@@ -185,7 +184,7 @@ public class QaService {
                     String[] keywordArray = keyword.split(",");
 
                     for (String key : keywordArray) {
-                        addElement(atomicListRef, key);
+                        addElement(feedback1, key);
                     }
                 } else if (type == 2) {
                     feedback2.set(feedbackListRes.getContent());
@@ -199,10 +198,11 @@ public class QaService {
                     .answer(qaListRes1.getAnswer())
                     .regDate(qaListRes1.getRegDate())
                     .modifyDate(qaListRes1.getModifyDate())
-                    .keyword(atomicListRef.get())
+                    .keyword(feedback1.get())
                     .bestAnswer(feedback2.get())
                     .build();
             listForFeedbackResList.add(qalistForFeedbackRes);
+            feedback1.set(new ArrayList<>());
         });
         return listForFeedbackResList;
     }
