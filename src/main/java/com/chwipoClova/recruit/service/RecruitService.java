@@ -174,19 +174,39 @@ public class RecruitService {
             String[] splitSummaryList = summary.split("\n");
 
             // 기업명 고정
-            String targetWord = "기업 :";
-            String targetWord2 = "기업명 :";
+            String targetWord1 = "기업 :";
+            String targetWord2 = "기업:";
+            String targetWord3 = "기업명 :";
+            String targetWord4 = "기업명:";
+
             for (String splitSummary : splitSummaryList) {
                 if (splitSummary.indexOf(".") != -1) {
                     String num = splitSummary.substring(0, splitSummary.indexOf("."));
                     if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
-                        int index = splitSummary.indexOf(targetWord);
-                        if (index != -1) {
-                            title = splitSummary.substring(index + targetWord.length()).trim();
+                        int index1 = splitSummary.indexOf(targetWord1);
+                        int index2 = splitSummary.indexOf(targetWord2);
+                        int index3 = splitSummary.indexOf(targetWord3);
+                        int index4 = splitSummary.indexOf(targetWord4);
+
+                        if (index1 != -1) {
+                            index1 = splitSummary.indexOf(targetWord1);
+                            if (index1 != -1) {
+                                title = splitSummary.substring(index1 + targetWord1.length()).trim();
+                            }
+                        } else if (index2 != -1) {
+                            index2 = splitSummary.indexOf(targetWord2);
+                            if (index2 != -1) {
+                                title = splitSummary.substring(index2 + targetWord2.length()).trim();
+                            }
+                        } else if (index3 != -1) {
+                            index3 = splitSummary.indexOf(targetWord3);
+                            if (index3 != -1) {
+                                title = splitSummary.substring(index3 + targetWord3.length()).trim();
+                            }
                         } else {
-                            index = splitSummary.indexOf(targetWord2);
-                            if (index != -1) {
-                                title = splitSummary.substring(index + targetWord2.length()).trim();
+                            index4 = splitSummary.indexOf(targetWord4);
+                            if (index4 != -1) {
+                                title = splitSummary.substring(index4 + targetWord4.length()).trim();
                             }
                         }
                     }
