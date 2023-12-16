@@ -93,7 +93,8 @@ public class QaService {
         Qa lastQa = qaRepository.findFirstByInterviewInterviewIdOrderByQaIdDesc(interviewId);
         Long lastQaId = lastQa.getQaId();
 
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder questionStringBuilder = new StringBuilder();
+        StringBuilder answerStringBuilder = new StringBuilder();
         AtomicBoolean lastCkAtomic = new AtomicBoolean(false);
 
         AtomicLong answerCnt = new AtomicLong();
@@ -114,8 +115,12 @@ public class QaService {
 
                 answerCnt.getAndIncrement();
 
-                stringBuilder.append(answerCnt.get() + ". " + qa.getAnswer());
-                stringBuilder.append("\n");
+                questionStringBuilder.append(answerCnt.get() + ". " + qa.getQuestion());
+                questionStringBuilder.append("\n");
+
+                answerStringBuilder.append(answerCnt.get() + ". " + qa.getAnswer());
+                answerStringBuilder.append("\n");
+
 
                 // 피드백 정보
                 FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
@@ -135,12 +140,13 @@ public class QaService {
 
         if (lastCk || lastBtnCk == 1) {
 
-            String allAnswerData = stringBuilder.toString().trim();
+            String allQuestionData = questionStringBuilder.toString().trim();
+            String allAnswerData = answerStringBuilder.toString().trim();
 
             // 면접관의 속마음
             String apiFeelRst = apiUtils.feel(allAnswerData);
 
-            feedbackService.insertFeedback(allAnswerData, feedbackInsertListReq);
+            feedbackService.insertFeedback(allQuestionData, allAnswerData, feedbackInsertListReq);
 
             // 면접 완료 처리
             InterviewEditor.InterviewEditorBuilder editorBuilder = interview.toEditor();
