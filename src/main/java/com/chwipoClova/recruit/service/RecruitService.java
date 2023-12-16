@@ -176,6 +176,7 @@ public class RecruitService {
 
             // 기업명 고정
             String targetWord = "기업 :";
+            String targetWord2 = "기업명 :";
             for (String splitSummary : splitSummaryList) {
                 if (splitSummary.indexOf(".") != -1) {
                     String num = splitSummary.substring(0, splitSummary.indexOf("."));
@@ -183,6 +184,11 @@ public class RecruitService {
                         int index = splitSummary.indexOf(targetWord);
                         if (index != -1) {
                             title = splitSummary.substring(index + targetWord.length()).trim();
+                        } else {
+                            index = splitSummary.indexOf(targetWord2);
+                            if (index != -1) {
+                                title = splitSummary.substring(index + targetWord2.length()).trim();
+                            }
                         }
                     }
                 }
