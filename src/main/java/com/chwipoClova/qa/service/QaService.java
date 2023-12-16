@@ -131,7 +131,7 @@ public class QaService {
         Boolean lastCk = lastCkAtomic.get();
 
         // 마지막 문제 넘기기 눌렀을 경우
-        Integer lastBtnCk = qaAnswerInsertReq.getLastBtnCk();
+        Integer lastBtnCk = qaAnswerInsertReq.getLastBtnCk() == null ? 0 : qaAnswerInsertReq.getLastBtnCk();
 
         if (lastCk || lastBtnCk == 1) {
 
