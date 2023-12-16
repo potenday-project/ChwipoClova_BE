@@ -4,6 +4,7 @@ package com.chwipoClova.recruit.service;
 import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.utils.ApiUtils;
+import com.chwipoClova.common.utils.FileUtil;
 import com.chwipoClova.recruit.entity.Recruit;
 import com.chwipoClova.recruit.repository.RecruitRepository;
 import com.chwipoClova.recruit.request.RecruitInsertReq;
@@ -101,10 +102,10 @@ public class RecruitService {
                     .user(user)
                     .build();
         } else {
-            String contentType = file.getContentType();
-            assert contentType != null;
 
-            if (contentType.toLowerCase().indexOf(uploadType) == -1) {
+            String contentType = FileUtil.getOriginalFileExtension(file);
+
+            if (org.apache.commons.lang3.StringUtils.isBlank(contentType) || contentType.toLowerCase().indexOf(uploadType) == -1) {
                 throw new CommonException(ExceptionCode.FILE_EXT_IMAGE.getMessage(), ExceptionCode.FILE_EXT_IMAGE.getCode());
             }
 
