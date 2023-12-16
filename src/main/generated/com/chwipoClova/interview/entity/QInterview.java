@@ -26,6 +26,8 @@ public class QInterview extends EntityPathBase<Interview> {
 
     public final NumberPath<Long> interviewId = createNumber("interviewId", Long.class);
 
+    public final DateTimePath<java.util.Date> modifyDate = createDateTime("modifyDate", java.util.Date.class);
+
     public final StringPath recruitSummary = createString("recruitSummary");
 
     public final DateTimePath<java.util.Date> regDate = createDateTime("regDate", java.util.Date.class);
