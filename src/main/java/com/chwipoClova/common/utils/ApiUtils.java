@@ -80,6 +80,7 @@ public class ApiUtils {
         }
         try {
             ResponseEntity<String> responseAsString = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
+            log.info("responseAsString : " +  responseAsString);
             if (responseAsString == null) {
                 resultMessage = "API 결과 NULL";
                 log.info("API 결과 NULL");
@@ -149,7 +150,7 @@ public class ApiUtils {
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
-
+        log.info("summary : " +  summary);
         String count = callApi(apiUrl, requestEntity);
 
         if (!org.apache.commons.lang3.StringUtils.isNumeric(count)) {
@@ -179,21 +180,23 @@ public class ApiUtils {
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
+        log.info("resumeTxt : " +  resumeTxt);
 
         ApiRes response = callApiForJson(apiUrl, requestEntity);
         return response.getResult().getMessage().getContent();
     }
 
-    public String summaryRecruit(String resumeTxt) {
+    public String summaryRecruit(String recruitTxt) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.TEXT_PLAIN);
 
-        HttpEntity<String> requestEntity = new HttpEntity<>(resumeTxt, httpHeaders);
+        HttpEntity<String> requestEntity = new HttpEntity<>(recruitTxt, httpHeaders);
         URI apiUrl = UriComponentsBuilder
                 .fromHttpUrl(apiBaseUrl + recruit)
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
+        log.info("recruitTxt : " +  recruitTxt);
 
         ApiRes response = callApiForJson(apiUrl, requestEntity);
         return response.getResult().getMessage().getContent();
@@ -212,6 +215,8 @@ public class ApiUtils {
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
+        log.info("recruitSummary : " +  recruitSummary);
+        log.info("resumeSummary : " +  resumeSummary);
 
         ApiRes response = callApiForJson(apiUrl, requestEntity);
         return response.getResult().getMessage().getContent();
@@ -227,6 +232,7 @@ public class ApiUtils {
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
+        log.info("feel : " + allQa);
 
         ApiRes response = callApiForJson(apiUrl, requestEntity);
         return response.getResult().getMessage().getContent();
@@ -242,6 +248,7 @@ public class ApiUtils {
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
+        log.info("keyword : " + qa);
 
         ApiRes response = callApiForJson(apiUrl, requestEntity);
         return response.getResult().getMessage().getContent();
@@ -257,6 +264,7 @@ public class ApiUtils {
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
+        log.info("best : " + qa);
 
         ApiRes response = callApiForJson(apiUrl, requestEntity);
         return response.getResult().getMessage().getContent();
