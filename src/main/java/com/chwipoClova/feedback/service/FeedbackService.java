@@ -48,14 +48,14 @@ public class FeedbackService {
     private final ApiUtils apiUtils;
 
     @Transactional
-    public CommonResponse insertFeedback(String allAnswerData, List<FeedbackInsertReq> feedbackInsertListReq) throws IOException {
+    public CommonResponse insertFeedback(String allQuestionData, String allAnswerData, List<FeedbackInsertReq> feedbackInsertListReq) throws IOException {
 
         // TODO 피드백 연동 필요함 답변이 있는 경우만 전달하자
         // 키워드
         String apiKeywordRst = apiUtils.keyword(allAnswerData);
 
         // 모범답안
-        String apiBestRst = apiUtils.best(allAnswerData);
+        String apiBestRst = apiUtils.best(allQuestionData, allAnswerData);
 
         // 피드백 매핑
         setApiFeedbackData(apiKeywordRst, apiBestRst, feedbackInsertListReq);
@@ -93,7 +93,11 @@ public class FeedbackService {
         if (status != 1) {
             throw new CommonException(ExceptionCode.INTERVIEW_NOT_COMPLETE.getMessage(), ExceptionCode.INTERVIEW_NOT_COMPLETE.getCode());
         }
-        StringBuilder stringBuilder = new StringBuilder();
+
+        StringBuilder questionStringBuilder = new StringBuilder();
+
+        StringBuilder answerStringBuilder = new StringBuilder();
+
         AtomicLong answerCnt = new AtomicLong();
         List<FeedbackInsertReq> feedbackInsertListReq = new ArrayList<>();
         qaRepository.findByInterviewInterviewIdOrderByQaId(interviewId).stream().forEach(qa -> {
@@ -103,8 +107,13 @@ public class FeedbackService {
             if (StringUtils.isNotBlank(answer)) {
                 answerCnt.getAndIncrement();
 
-                stringBuilder.append(answerCnt.get() + ". " + qa.getAnswer());
-                stringBuilder.append("\n");
+                qa.getQuestion();
+
+                questionStringBuilder.append(answerCnt.get() + ". " + getDelStartNum(qa.getQuestion()));
+                questionStringBuilder.append("\n");
+
+                answerStringBuilder.append(answerCnt.get() + ". " + qa.getAnswer());
+                answerStringBuilder.append("\n");
 
                 FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
                 feedbackInsertReq.setQaId(qa.getQaId());
@@ -115,16 +124,30 @@ public class FeedbackService {
             }
         });
 
-        String allAnswerData = stringBuilder.toString().trim();
+        String allQuestionData = questionStringBuilder.toString().trim();
+        String allAnswerData = answerStringBuilder.toString().trim();
         // 면접관의 속마음
         String apiFeelRst = apiUtils.feel(allAnswerData);
         InterviewEditor.InterviewEditorBuilder editorBuilder = interview.toEditor();
         InterviewEditor interviewEditor = editorBuilder.feedback(apiFeelRst).build();
         interview.edit(interviewEditor);
 
-        insertFeedback(allAnswerData, feedbackInsertListReq);
+        insertFeedback(allQuestionData, allAnswerData, feedbackInsertListReq);
 
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
+    }
+
+    private String getDelStartNum(String text) {
+        if (text.indexOf(".") != -1) {
+            String num = text.substring(0, text.indexOf("."));
+            if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
+                return text.substring(text.indexOf(".") + 1).trim();
+            } else {
+                return text;
+            }
+        } else {
+            return text;
+        }
     }
 
     @Transactional
@@ -188,6 +211,9 @@ public class FeedbackService {
                 String num = splitSummary.substring(0, splitSummary.indexOf("."));
                 if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
                     String content = splitSummary.substring(splitSummary.indexOf(".") + 1).trim();
+
+                    // 대괄호 삭제
+                    content = content.replaceAll("\\[", "").replaceAll("\\]", "");
 
                     FeedbackListRes feedbackListRes = FeedbackListRes.builder()
                             .qaId(Long.parseLong(num))

@@ -254,17 +254,23 @@ public class ApiUtils {
         return response.getResult().getMessage().getContent();
     }
 
-    public String best(String qa) {
+    public String best(String question, String answer) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.TEXT_PLAIN);
 
-        HttpEntity<String> requestEntity = new HttpEntity<>(qa, httpHeaders);
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("question", question);
+        body.add("answer", answer);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, httpHeaders);
         URI apiUrl = UriComponentsBuilder
                 .fromHttpUrl(apiBaseUrl + best)
                 .build(true)
                 .toUri();
         log.info("uri : " +  apiUrl);
-        log.info("best : " + qa);
+        log.info("question : " + question);
+        log.info("answer : " + answer);
 
         ApiRes response = callApiForJson(apiUrl, requestEntity);
         return response.getResult().getMessage().getContent();
