@@ -115,12 +115,11 @@ public class QaService {
 
                 answerCnt.getAndIncrement();
 
-                questionStringBuilder.append(answerCnt.get() + ". " + qa.getQuestion());
+                questionStringBuilder.append(answerCnt.get() + ". " + getDelStartNum(qa.getQuestion()));
                 questionStringBuilder.append("\n");
 
                 answerStringBuilder.append(answerCnt.get() + ". " + qa.getAnswer());
                 answerStringBuilder.append("\n");
-
 
                 // 피드백 정보
                 FeedbackInsertReq feedbackInsertReq = new FeedbackInsertReq();
@@ -157,6 +156,18 @@ public class QaService {
         return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
     }
 
+    private String getDelStartNum(String text) {
+        if (text.indexOf(".") != -1) {
+            String num = text.substring(0, text.indexOf("."));
+            if (org.apache.commons.lang3.StringUtils.isNumeric(num)) {
+                return text.substring(text.indexOf(".") + 1).trim();
+            } else {
+                return text;
+            }
+        } else {
+            return text;
+        }
+    }
 
 
     public List<QaListRes> selectQaList(Long interviewId) {

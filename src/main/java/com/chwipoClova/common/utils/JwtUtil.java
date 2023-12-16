@@ -153,7 +153,7 @@ public class JwtUtil {
                 .path("/")
                 .secure(true)
                 .sameSite("None")
-                .httpOnly(false)
+                .httpOnly(true)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
         /*response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
@@ -171,7 +171,7 @@ public class JwtUtil {
                 .path("/")
                 .secure(true)
                 .sameSite("None")
-                .httpOnly(false)
+                .httpOnly(true)
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
