@@ -40,7 +40,7 @@ public class FileUtil {
         if (fileSignature.startsWith("FFD8FF") || fileSignature.startsWith("89504E47")) {
             return "image";
         } else if (fileSignature.startsWith("25504446")) {
-            return "png";
+            return "pdf";
         }
 
         // 해당되는 파일 시그니처를 찾지 못한 경우 null 반환
