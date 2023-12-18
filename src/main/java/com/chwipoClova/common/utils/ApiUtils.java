@@ -1,7 +1,6 @@
 package com.chwipoClova.common.utils;
 
 import com.chwipoClova.common.dto.UserDetailsImpl;
-import com.chwipoClova.common.entity.ApiLog;
 import com.chwipoClova.common.exception.CommonException;
 import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.repository.ApiLogRepository;
@@ -19,7 +18,6 @@ import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -69,17 +67,17 @@ public class ApiUtils {
     @Value("${api.url.best}")
     private String best;
 
-    @Transactional
-    public String callApi(URI apiUrl, HttpEntity<?> entity) {
+    public String callApi(URI apiUrl, String reqData, HttpEntity<?> entity) {
         String resultData = null;
         String resultMessage;
         Long userId = null;
+        ResponseEntity<String> responseAsString = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getPrincipal() instanceof UserDetailsImpl) {
             userId = ((UserDetailsImpl) authentication.getPrincipal()).getUser().getUserId();
         }
         try {
-            ResponseEntity<String> responseAsString = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
+            responseAsString = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
             log.info("responseAsString : " +  responseAsString);
             if (responseAsString == null) {
                 resultMessage = "API 결과 NULL";
@@ -104,12 +102,7 @@ public class ApiUtils {
         }
 
         // API 로그 적재
-        ApiLog apiLog = ApiLog.builder()
-                .userId(userId)
-                .apiUrl(apiUrl.toString())
-                .message(resultMessage)
-                .build();
-        apiLogRepository.save(apiLog);
+        apiLogRepository.apiLogSave(userId, apiUrl.toString(), reqData, responseAsString.toString(), resultMessage);
 
         if (resultData == null) {
             throw new CommonException(ExceptionCode.API_NULL.getMessage(), ExceptionCode.API_NULL.getCode());
@@ -137,7 +130,9 @@ public class ApiUtils {
                 .toUri();
         log.info("uri : " +  apiUrl);
 
-        return callApi(apiUrl, requestEntity);
+        String reqData = "file : " + file.getOriginalFilename();
+
+        return callApi(apiUrl, reqData, requestEntity);
     }
 
     public String countToken(String summary) {
@@ -151,7 +146,10 @@ public class ApiUtils {
                 .toUri();
         log.info("uri : " +  apiUrl);
         log.info("summary : " +  summary);
-        String count = callApi(apiUrl, requestEntity);
+
+        String reqData = "summary : " + summary;
+
+        String count = callApi(apiUrl, reqData, requestEntity);
 
         if (!org.apache.commons.lang3.StringUtils.isNumeric(count)) {
             new CommonException(ExceptionCode.API_TOKEN_COUNT_FAIL.getMessage(), ExceptionCode.API_TOKEN_COUNT_FAIL.getCode());
@@ -182,7 +180,9 @@ public class ApiUtils {
         log.info("uri : " +  apiUrl);
         log.info("resumeTxt : " +  resumeTxt);
 
-        ApiRes response = callApiForJson(apiUrl, requestEntity);
+        String reqData = "resumeTxt : " + resumeTxt;
+
+        ApiRes response = callApiForJson(apiUrl, reqData, requestEntity);
         return response.getResult().getMessage().getContent();
     }
 
@@ -198,7 +198,9 @@ public class ApiUtils {
         log.info("uri : " +  apiUrl);
         log.info("recruitTxt : " +  recruitTxt);
 
-        ApiRes response = callApiForJson(apiUrl, requestEntity);
+        String reqData = "recruitTxt : " + recruitTxt;
+
+        ApiRes response = callApiForJson(apiUrl, reqData, requestEntity);
         return response.getResult().getMessage().getContent();
     }
 
@@ -218,7 +220,9 @@ public class ApiUtils {
         log.info("recruitSummary : " +  recruitSummary);
         log.info("resumeSummary : " +  resumeSummary);
 
-        ApiRes response = callApiForJson(apiUrl, requestEntity);
+        String reqData = "recruitSummary : " + recruitSummary + "######" + " resumeSummary : " + resumeSummary;
+
+        ApiRes response = callApiForJson(apiUrl, reqData, requestEntity);
         return response.getResult().getMessage().getContent();
     }
 
@@ -234,7 +238,9 @@ public class ApiUtils {
         log.info("uri : " +  apiUrl);
         log.info("feel : " + allQa);
 
-        ApiRes response = callApiForJson(apiUrl, requestEntity);
+        String reqData = "feel : " + allQa;
+
+        ApiRes response = callApiForJson(apiUrl, reqData, requestEntity);
         return response.getResult().getMessage().getContent();
     }
 
@@ -250,7 +256,9 @@ public class ApiUtils {
         log.info("uri : " +  apiUrl);
         log.info("keyword : " + qa);
 
-        ApiRes response = callApiForJson(apiUrl, requestEntity);
+        String reqData = "keyword : " + qa;
+
+        ApiRes response = callApiForJson(apiUrl, reqData, requestEntity);
         return response.getResult().getMessage().getContent();
     }
 
@@ -272,12 +280,14 @@ public class ApiUtils {
         log.info("question : " + question);
         log.info("answer : " + answer);
 
-        ApiRes response = callApiForJson(apiUrl, requestEntity);
+        String reqData = "question : " + question + "######" + " answer : " + answer;
+
+        ApiRes response = callApiForJson(apiUrl, reqData, requestEntity);
         return response.getResult().getMessage().getContent();
     }
 
-    public ApiRes callApiForJson(URI apiUrl, HttpEntity<?> entity) {
-        return josnConvertToVo(callApi(apiUrl, entity));
+    public ApiRes callApiForJson(URI apiUrl, String reqData, HttpEntity<?> entity) {
+        return josnConvertToVo(callApi(apiUrl, reqData, entity));
     }
 
     private <T> T xmlConvertToVo(String xml, Class<T> voClass) throws JAXBException {
@@ -304,16 +314,6 @@ public class ApiUtils {
             return response;
         } catch (JsonProcessingException e) {
             throw new CommonException(ExceptionCode.API_JSON_MAPPING_FAIL.getMessage(), ExceptionCode.API_JSON_MAPPING_FAIL.getCode());
-        }
-    }
-
-    private String retryApi(URI apiUrl, HttpEntity<String> entity) {
-        if (retryCnt <=3) {
-            log.info("retryApi : " + retryCnt);
-            retryCnt++;
-            return callApi(apiUrl, entity);
-        } else {
-            return null;
         }
     }
 }
