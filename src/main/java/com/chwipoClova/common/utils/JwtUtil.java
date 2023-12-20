@@ -152,6 +152,7 @@ public class JwtUtil {
                 .maxAge(REFRESH_COOKIE_TIME)
                 .path("/")
                 .secure(true)
+                .domain(".tikitaka.chat")
                 .sameSite("None")
                 .httpOnly(true)
                 .build();
@@ -170,6 +171,7 @@ public class JwtUtil {
                 .maxAge(0)
                 .path("/")
                 .secure(true)
+                .domain(".tikitaka.chat")
                 .sameSite("None")
                 .httpOnly(true)
                 .build();
