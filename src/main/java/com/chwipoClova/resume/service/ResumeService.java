@@ -149,6 +149,10 @@ public class ResumeService {
                 .build();
 
         Resume resumeRst = resumeRepository.save(resume);
+
+        // 파일 삭제
+        pdfFile.delete();
+
         return ResumeUploadRes.builder().userId(userId).resumeId(resumeRst.getResumeId()).build();
     }
 

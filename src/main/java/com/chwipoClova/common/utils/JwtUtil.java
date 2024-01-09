@@ -22,10 +22,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
@@ -49,6 +46,9 @@ public class JwtUtil {
     public static final String AUTHORIZATION = "Authorization";
 
     public static final String BEARER = "Bearer ";
+
+    @Value("${cors.domain}")
+    private String domain;
 
 
     @Value("${jwt.secretKey}")
@@ -152,7 +152,7 @@ public class JwtUtil {
                 .maxAge(REFRESH_COOKIE_TIME)
                 .path("/")
                 .secure(true)
-                .domain(".tikitaka.chat")
+                .domain(domain)
                 .sameSite("None")
                 .httpOnly(true)
                 .build();
@@ -171,7 +171,7 @@ public class JwtUtil {
                 .maxAge(0)
                 .path("/")
                 .secure(true)
-                .domain(".tikitaka.chat")
+                .domain(domain)
                 .sameSite("None")
                 .httpOnly(true)
                 .build();
