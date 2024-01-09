@@ -5,9 +5,9 @@ import com.chwipoClova.common.service.JwtAuthenticationEntryPoint;
 import com.chwipoClova.common.utils.JwtUtil;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -18,12 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-
-import java.util.Arrays;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -34,6 +28,12 @@ public class WebSecurityConfig {
 
     private final JwtUtil jwtUtil;
 
+    @Value("${web.ignoring.url}")
+    private String[] ignoringUrl;
+
+    @Value("${web.authorize.url}")
+    private String[] authorizeUrl;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -41,11 +41,7 @@ public class WebSecurityConfig {
 
     @Bean
     public WebSecurityCustomizer ignoringCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/h2-console/**", "/swagger-ui/**", "/swagger-client/**", "/api-docs/**", "/css/**", "/js/**", "/json/**", "/image/**",
-                "/favicon",
-                "/v3/api-docs/**",
-                "/swagger-ui.html"
-        );
+        return (web) -> web.ignoring().requestMatchers(ignoringUrl);
     }
 
     @Bean
@@ -57,9 +53,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 //.requestMatchers("/**").permitAll().anyRequest().authenticated()
-                                .requestMatchers("/"
-                                ,"/user/getKakaoUrl","/user/kakaoLogin", "/user/getKakaoDevUrl", "/user/kakaoDevLogin", "/user/kakaoCallback","/user/logout"
-                                ).permitAll().anyRequest().authenticated()
+                                .requestMatchers(authorizeUrl).permitAll().anyRequest().authenticated()
                                 //.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 )

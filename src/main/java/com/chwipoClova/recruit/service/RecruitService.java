@@ -71,6 +71,18 @@ public class RecruitService {
     @Value("${api.token_limit.base}")
     private int apiBaseTokenLimit;
 
+    @Value("${recruit.target.word1}")
+    private String targetWord1;
+
+    @Value("${recruit.target.word2}")
+    private String targetWord2;
+
+    @Value("${recruit.target.word3}")
+    private String targetWord3;
+
+    @Value("${recruit.target.word4}")
+    private String targetWord4;
+
     @Transactional
     public RecruitInsertRes insertRecruit(RecruitInsertReq recruitInsertReq) throws IOException {
         Long userId = recruitInsertReq.getUserId();
@@ -135,6 +147,8 @@ public class RecruitService {
             Path savePath = Paths.get(saveName);
             file.transferTo(savePath);
 
+            File saveFile = new File(saveName);
+
             // 채용공고 OCR
             String resumeTxt = apiUtils.ocr(file);
 
@@ -156,6 +170,9 @@ public class RecruitService {
                     .user(user)
                     .summary(summary)
                     .build();
+
+            // 파일 삭제
+            saveFile.delete();
         }
 
         Recruit recruitRst = recruitRepository.save(recruit);
@@ -175,11 +192,6 @@ public class RecruitService {
             String[] splitSummaryList = summary.split("\n");
 
             // 기업명 고정
-            String targetWord1 = "기업 :";
-            String targetWord2 = "기업:";
-            String targetWord3 = "기업명 :";
-            String targetWord4 = "기업명:";
-
             for (String splitSummary : splitSummaryList) {
                 if (splitSummary.indexOf(".") != -1) {
                     String num = splitSummary.substring(0, splitSummary.indexOf("."));
@@ -204,7 +216,7 @@ public class RecruitService {
                             if (index3 != -1) {
                                 title = splitSummary.substring(index3 + targetWord3.length()).trim();
                             }
-                        } else {
+                        } else if (index4 != -1) {
                             index4 = splitSummary.indexOf(targetWord4);
                             if (index4 != -1) {
                                 title = splitSummary.substring(index4 + targetWord4.length()).trim();
