@@ -11,6 +11,7 @@ public class ApiResult {
     private String stopReason;
     private Integer inputLength;
     private Integer outputLength;
+    private String seed;
 
     private List<ApiAiFilter> aiFilter;
 }
