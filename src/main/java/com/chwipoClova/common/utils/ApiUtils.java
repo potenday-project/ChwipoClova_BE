@@ -6,6 +6,7 @@ import com.chwipoClova.common.exception.ExceptionCode;
 import com.chwipoClova.common.repository.ApiLogRepository;
 import com.chwipoClova.resume.response.ApiRes;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -300,7 +301,7 @@ public class ApiUtils {
 
     private ApiRes josnConvertToVo(String json) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);;
             ApiRes response = objectMapper.readValue(json, ApiRes.class);
 
             if (response == null)  {
@@ -313,6 +314,7 @@ public class ApiUtils {
 
             return response;
         } catch (JsonProcessingException e) {
+            log.error("josnConvertToVo error {}", e.getMessage());
             throw new CommonException(ExceptionCode.API_JSON_MAPPING_FAIL.getMessage(), ExceptionCode.API_JSON_MAPPING_FAIL.getCode());
         }
     }
