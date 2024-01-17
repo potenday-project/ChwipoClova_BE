@@ -9,14 +9,14 @@ name: Java CI with Gradle Docker
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "develop" ]
 
 permissions:
   contents: read
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: devserver
 
     steps:
       - name: checkout
@@ -40,13 +40,13 @@ jobs:
       - name: Docker build
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_REPO }}/chwipoclovadocker .
-          docker push ${{ secrets.DOCKER_REPO }}/chwipoclovadocker
+          docker build -t ${{ secrets.DOCKER_REPO }}/devchwipoclovadocker -f Dockerfile.dev .
+          docker push ${{ secrets.DOCKER_REPO }}/devchwipoclovadocker
 
       - name: Deploy
         run: |
           docker stop be-con || true
           docker rm -f be-con || true
           docker rmi $(docker images -f "dangling=true" -q) || true
-          docker pull ${{ secrets.DOCKER_REPO }}/chwipoclovadocker:latest
-          docker run -v /var/log/service:/var/log/service -v /var/upload:/var/upload --name be-con -p 8080:8080 -d ${{ secrets.DOCKER_REPO }}/chwipoclovadocker:latest
+          docker pull ${{ secrets.DOCKER_REPO }}/devchwipoclovadocker:latest
+          docker run -v /var/log/service:/var/log/service -v /var/upload:/var/upload --name be-con -p 8080:8080 -d ${{ secrets.DOCKER_REPO }}/devchwipoclovadocker:latest
