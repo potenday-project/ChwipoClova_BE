@@ -152,7 +152,7 @@ public class JwtUtil {
                 .maxAge(REFRESH_COOKIE_TIME)
                 .path("/")
                 .secure(true)
-                .domain(domain)
+                //.domain(domain)
                 .sameSite("None")
                 .httpOnly(true)
                 .build();
