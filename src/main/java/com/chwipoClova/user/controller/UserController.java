@@ -4,6 +4,7 @@ import com.chwipoClova.common.dto.UserDetailsImpl;
 import com.chwipoClova.common.response.CommonMsgResponse;
 import com.chwipoClova.common.response.CommonResponse;
 import com.chwipoClova.common.response.MessageCode;
+import com.chwipoClova.common.utils.JwtUtil;
 import com.chwipoClova.user.entity.User;
 import com.chwipoClova.user.request.UserLoginReq;
 import com.chwipoClova.user.request.UserLogoutReq;
@@ -34,6 +35,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    private final JwtUtil jwtUtil;
 
     @Operation(summary = "유저 정보 조회", description = "유저 정보 조회")
     @GetMapping("/getUserInfo")
@@ -112,4 +115,17 @@ public class UserController {
     ) {
         return userService.logout(response, userLogoutReq);
     }
+    @Operation(summary = "쿠키테스트", description = "쿠키테스트")
+    @PostMapping("/cookie")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))
+    }
+    )
+    public CommonResponse cookie(@Parameter(hidden = true) HttpServletResponse response
+    ) {
+
+        jwtUtil.setResonseJwtToken(response, "11234", "1232142421");
+        return new CommonResponse<>(MessageCode.OK.getCode(), null, MessageCode.OK.getMessage());
+    }
+
 }
