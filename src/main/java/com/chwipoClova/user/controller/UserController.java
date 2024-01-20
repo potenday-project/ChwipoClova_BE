@@ -116,7 +116,7 @@ public class UserController {
         return userService.logout(response, userLogoutReq);
     }
     @Operation(summary = "쿠키테스트", description = "쿠키테스트")
-    @PostMapping("/cookie")
+    @GetMapping("/cookie")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class)))
     }
