@@ -41,7 +41,7 @@ public class JwtUtil {
 
     public static final String ACCESS_TOKEN = "accessToken";
 
-    public static final String REFRESH_TOKEN = "refresh_token";
+    public static final String REFRESH_TOKEN = "refreshToken";
 
     public static final String AUTHORIZATION = "Authorization";
 
@@ -152,9 +152,9 @@ public class JwtUtil {
                 .maxAge(REFRESH_COOKIE_TIME)
                 .path("/")
                 .secure(true)
-                //.domain(domain)
+                .domain(domain)
                 .sameSite("None")
-                .httpOnly(true)
+                //.httpOnly(true)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
         /*response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
