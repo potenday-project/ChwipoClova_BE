@@ -150,10 +150,10 @@ public class JwtUtil {
     public void setCookieRefreshToken(HttpServletResponse response, String refreshToken) {
         ResponseCookie responseCookie = ResponseCookie.from(REFRESH_TOKEN, refreshToken)
                 .maxAge(REFRESH_COOKIE_TIME)
-                .path("/")
+                //.path("/")
                 .secure(true)
-                .domain(domain)
-                //.sameSite("None")
+                //.domain(domain)
+                .sameSite("None")
                 .httpOnly(true)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
