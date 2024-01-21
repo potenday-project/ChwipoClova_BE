@@ -154,7 +154,7 @@ public class JwtUtil {
                 .secure(true)
                 .domain(domain)
                 .sameSite("None")
-                //.httpOnly(true)
+                .httpOnly(true)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
         /*response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
