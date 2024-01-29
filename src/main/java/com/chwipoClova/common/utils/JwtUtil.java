@@ -122,7 +122,8 @@ public class JwtUtil {
         // DB에 저장한 토큰 비교
         Optional<Token> refreshToken = tokenRepository.findByUserUserId(userId);
 
-        return refreshToken.isPresent() && token.equals(refreshToken.get().getRefreshToken());
+        //return refreshToken.isPresent() && token.equals(refreshToken.get().getRefreshToken());
+        return refreshToken.isPresent();
     }
 
     // 인증 객체 생성
@@ -157,13 +158,6 @@ public class JwtUtil {
                 .httpOnly(true)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
-        /*response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
-        Cookie cookie = new Cookie(REFRESH_TOKEN, refreshToken);
-        cookie.setMaxAge(REFRESH_COOKIE_TIME);
-        cookie.setHttpOnly(true);
-        //cookie.setSecure(true);
-        cookie.setPath("/");
-        response.addCookie(cookie);*/
     }
 
     public void setDelCookieRefreshToken(HttpServletResponse response) {
@@ -176,14 +170,6 @@ public class JwtUtil {
                 .httpOnly(true)
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
-
-/*        Cookie cookie = new Cookie(REFRESH_TOKEN, null);
-        cookie.setMaxAge(0);
-        cookie.setHttpOnly(true);
-        //cookie.setSecure(true);
-        cookie.setPath("/");
-        response.addCookie(cookie);*/
-
     }
 
     public String getCookieToken(HttpServletRequest request, String type) {
